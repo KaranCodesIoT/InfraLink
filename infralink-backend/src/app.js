@@ -36,6 +36,7 @@ import searchRoutes from './modules/search/search.routes.js';
 import healthRoutes from './modules/health/health.routes.js';
 import aiRoutes from './modules/ai/ai.routes.js';
 import serviceRoutes from './modules/services/service.routes.js';
+import directoryRoutes from './modules/directory/directory.routes.js';
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use(`${V1}/services`, serviceRoutes);
 app.use(`${V1}/search`, searchRoutes);
 app.use(`${V1}/health`, healthRoutes);
 app.use(`${V1}/ai`, aiRoutes);
+app.use(`${V1}/directory`, directoryRoutes);
 
 // 404 handler
 app.use((_req, res) => {

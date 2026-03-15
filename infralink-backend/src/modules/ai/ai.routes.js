@@ -2,7 +2,7 @@ import { Router } from 'express';
 import authMiddleware from '../../middleware/auth.middleware.js';
 import requireRole from '../../middleware/role.middleware.js';
 import validate from '../../middleware/validate.middleware.js';
-import upload from '../../middleware/upload.middleware.js';
+import { uploadSingle } from '../../middleware/upload.middleware.js';
 
 // Sub-module controllers
 import * as chatbotCtrl from './chatbot/chatbot.controller.js';
@@ -36,11 +36,12 @@ router.patch('/assistant/memory', validate(updateMemorySchema), assistantCtrl.up
 router.delete('/assistant/history', assistantCtrl.clearHistory);
 
 // ─── Vision ───────────────────────────────────────────────────────────────────
-router.post('/vision/analyse', upload.single('image'), validate(analyseImageSchema), visionCtrl.analyseImage);
+router.post('/vision/analyse', uploadSingle('image'), validate(analyseImageSchema), visionCtrl.analyseImage);
 
 // ─── Voice ────────────────────────────────────────────────────────────────────
-router.post('/voice/transcribe', upload.single('audio'), validate(sttSchema), voiceCtrl.transcribeAudio);
+router.post('/voice/transcribe', uploadSingle('audio'), validate(sttSchema), voiceCtrl.transcribeAudio);
 router.post('/voice/synthesize', validate(ttsSchema), voiceCtrl.textToSpeech);
+
 
 // ─── Escalation ───────────────────────────────────────────────────────────────
 router.post('/escalation', validate(createEscalationSchema), escalationCtrl.createEscalation);

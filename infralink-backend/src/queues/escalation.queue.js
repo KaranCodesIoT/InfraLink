@@ -1,8 +1,8 @@
 import Bull from 'bull';
 import logger from '../utils/logger.js';
 
-export const escalationQueue = new Bull('escalation', {
-    redis: process.env.REDIS_URL || 'redis://localhost:6379',
+export const escalationQueue = new Bull('escalation', process.env.REDIS_URL || 'redis://localhost:6379', {
+    redis: { retryStrategy: () => null, maxRetriesPerRequest: null },
     defaultJobOptions: {
         attempts: 3,
         backoff: { type: 'exponential', delay: 5000 },

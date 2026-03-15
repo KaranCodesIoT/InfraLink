@@ -1,5 +1,5 @@
 import * as matchingService from './matching.service.js';
-import jobService from '../jobs/job.service.js';
+import * as jobService from '../jobs/job.service.js';
 import { sendSuccess, sendPaginatedSuccess } from '../../utils/response.utils.js';
 
 export const triggerMatching = async (req, res, next) => {
