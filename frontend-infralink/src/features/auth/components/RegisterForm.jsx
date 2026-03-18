@@ -9,8 +9,10 @@ export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // The system will redirect to complete profile/RoleSelect post-registration, but we set a default role for now or require it here. Let's redirect to RoleSelect after basic registration
-  
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+
   const { register, isLoading, error } = useAuthStore();
   const { toast } = useUIStore();
   const navigate = useNavigate();
@@ -18,8 +20,13 @@ export default function RegisterForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Default to normal_user if role isn't selected, can be updated later in RoleSelect
-      await register({ name, email, password, role: 'normal_user' });
+      await register({
+        name,
+        email,
+        password,
+        phone,
+        location: { city, state },
+      });
       toast.success('Account created successfully!');
       navigate(ROUTES.ROLE_SELECT);
     } catch {
@@ -28,7 +35,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
           {error}
@@ -43,6 +50,7 @@ export default function RegisterForm() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
+            placeholder="John Doe"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
           />
         </div>
@@ -56,8 +64,52 @@ export default function RegisterForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
           />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+        <div className="mt-1">
+          <input
+            type="tel"
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+91 98765 43210"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">City</label>
+          <div className="mt-1">
+            <input
+              type="text"
+              required
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Mumbai"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">State</label>
+          <div className="mt-1">
+            <input
+              type="text"
+              required
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              placeholder="Maharashtra"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+            />
+          </div>
         </div>
       </div>
 
@@ -70,6 +122,7 @@ export default function RegisterForm() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Min. 8 characters"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
           />
         </div>
@@ -80,9 +133,8 @@ export default function RegisterForm() {
         disabled={isLoading}
         className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
       >
-        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign up'}
+        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
       </button>
     </form>
   );
 }
-

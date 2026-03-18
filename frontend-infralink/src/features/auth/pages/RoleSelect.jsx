@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Hammer, HardHat, Briefcase } from 'lucide-react';
+import { Building2, Hammer, HardHat, Briefcase, HardDriveUpload, Wrench, Package, CheckCircle2 } from 'lucide-react';
 import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import api from '../../../lib/axios.js';
 
+// Individual role — goes straight to dashboard, no profile form
+const INDIVIDUAL_ROLE = 'normal_user';
+
 const ROLE_OPTIONS = [
   {
     id: 'normal_user',
     title: 'Individual / Homeowner',
-    description: 'Looking to hire professionals for a project.',
+    description: 'Looking to hire professionals for your project.',
     icon: HardHat,
     color: 'bg-blue-50 text-blue-600 border-blue-200',
     activeColor: 'ring-blue-500 border-blue-500',
@@ -26,18 +29,42 @@ const ROLE_OPTIONS = [
   {
     id: 'contractor',
     title: 'Contractor',
-    description: 'Bidding on projects and hiring skilled labor.',
+    description: 'Bidding on projects and managing skilled labour.',
     icon: Briefcase,
     color: 'bg-green-50 text-green-600 border-green-200',
     activeColor: 'ring-green-500 border-green-500',
   },
   {
-    id: 'worker',
-    title: 'Skilled Worker',
-    description: 'Looking for jobs and projects to work on.',
-    icon: Hammer,
+    id: 'architect',
+    title: 'Architect / Engineer',
+    description: 'Providing design and structural engineering services.',
+    icon: HardDriveUpload,
     color: 'bg-purple-50 text-purple-600 border-purple-200',
     activeColor: 'ring-purple-500 border-purple-500',
+  },
+  {
+    id: 'labour',
+    title: 'Skilled Labour',
+    description: 'Looking for construction jobs and projects to work on.',
+    icon: Hammer,
+    color: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+    activeColor: 'ring-yellow-500 border-yellow-500',
+  },
+  {
+    id: 'supplier',
+    title: 'Material Supplier',
+    description: 'Supplying construction materials and equipment.',
+    icon: Package,
+    color: 'bg-teal-50 text-teal-600 border-teal-200',
+    activeColor: 'ring-teal-500 border-teal-500',
+  },
+  {
+    id: 'worker',
+    title: 'General Worker',
+    description: 'Looking for general construction and site work.',
+    icon: Wrench,
+    color: 'bg-gray-50 text-gray-600 border-gray-200',
+    activeColor: 'ring-gray-500 border-gray-500',
   },
 ];
 
@@ -45,11 +72,11 @@ export default function RoleSelect() {
   const { user, initAuth } = useAuthStore();
   const { toast } = useUIStore();
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState(user?.role || 'normal_user');
+  const [selectedRole, setSelectedRole] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContinue = async () => {
-    if (selectedRole === user?.role) {
+    if (!selectedRole) {
       navigate(ROUTES.DASHBOARD);
       return;
     }
@@ -57,57 +84,107 @@ export default function RoleSelect() {
     setIsSubmitting(true);
     try {
       await api.patch(`/users/${user._id}`, { role: selectedRole });
-      await initAuth(); // Refresh user state
-      toast.success('Profile updated successfully!');
-      navigate(ROUTES.DASHBOARD);
+      await initAuth();
+
+      if (selectedRole === INDIVIDUAL_ROLE) {
+        // Individuals skip profile form — go straight to dashboard
+        toast.success('Welcome to InfraLink!');
+        navigate(ROUTES.DASHBOARD);
+      } else {
+        // All other professional roles → complete their profile first
+        navigate('/complete-profile');
+      }
     } catch {
-      toast.error('Failed to update role. Please try again.');
+      toast.error('Failed to save role. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const isIndividual = selectedRole === INDIVIDUAL_ROLE;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
+      {/* Progress */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-3xl mb-6 px-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="w-7 h-7 rounded-full bg-orange-600 text-white text-xs font-bold flex items-center justify-center">1</span>
+            <span className="text-sm font-medium text-orange-600">Choose Role</span>
+          </div>
+          <div className="flex-1 h-0.5 bg-gray-200 rounded" />
+          <div className="flex items-center gap-2">
+            <span className="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center">2</span>
+            <span className="text-sm font-medium text-gray-400">
+              {isIndividual ? 'Dashboard (auto)' : 'Complete Profile'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-3xl">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          How do you want to use InfraLink?
+          What's your role on InfraLink?
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Select your primary role. This determines what you see on your dashboard.
+        <p className="mt-2 text-center text-sm text-gray-500">
+          Choose the option that best describes you. You can always update this from your profile.
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ROLE_OPTIONS.map((role) => {
               const isSelected = selectedRole === role.id;
               return (
                 <div
                   key={role.id}
                   onClick={() => setSelectedRole(role.id)}
-                  className={`relative flex flex-col p-6 cursor-pointer rounded-xl border-2 transition-all ${
-                    isSelected ? role.activeColor + ' ring-1' : 'border-gray-200 hover:border-gray-300'
+                  className={`relative flex flex-col p-5 cursor-pointer rounded-xl border-2 transition-all duration-150 ${
+                    isSelected ? role.activeColor + ' ring-1' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${role.color}`}>
-                    <role.icon className="w-6 h-6" />
+                  {isSelected && (
+                    <CheckCircle2 className="absolute top-3 right-3 w-4 h-4 text-current opacity-90" />
+                  )}
+                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-3 border ${role.color}`}>
+                    <role.icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">{role.title}</h3>
-                  <p className="text-sm text-gray-500">{role.description}</p>
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">{role.title}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{role.description}</p>
+                  {role.id === INDIVIDUAL_ROLE && (
+                    <span className="mt-2 text-xs text-blue-500 font-medium">→ Goes straight to dashboard</span>
+                  )}
                 </div>
               );
             })}
           </div>
 
-          <div className="mt-8 flex justify-end">
+          {/* Tip for individual role */}
+          {isIndividual && (
+            <div className="mt-5 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700 flex items-center gap-2">
+              <HardHat className="w-4 h-4 shrink-0" />
+              As a homeowner, you'll go straight to the dashboard — no extra steps needed!
+            </div>
+          )}
+
+          <div className="mt-6 flex items-center justify-between">
+            <button
+              onClick={() => navigate(ROUTES.DASHBOARD)}
+              className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2"
+            >
+              Skip for now
+            </button>
             <button
               onClick={handleContinue}
-              disabled={isSubmitting}
-              className="bg-orange-600 text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !selectedRole}
+              className="bg-orange-600 text-white px-8 py-3 rounded-xl text-sm font-medium hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Saving...' : 'Continue to Dashboard'}
+              {isSubmitting
+                ? 'Saving...'
+                : isIndividual
+                  ? 'Continue to Dashboard →'
+                  : 'Next: Complete Profile →'}
             </button>
           </div>
         </div>
@@ -115,4 +192,3 @@ export default function RoleSelect() {
     </div>
   );
 }
-

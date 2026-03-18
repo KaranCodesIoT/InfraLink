@@ -22,6 +22,22 @@ export const updateUser = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const uploadAvatar = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ status: 'error', message: 'No image provided' });
+        }
+        
+        // Ensure user is updating their own avatar (or admin)
+        if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin') {
+            return res.status(403).json({ status: 'error', message: 'Not authorized to update this profile' });
+        }
+
+        const user = await userService.uploadAvatar(req.params.id, req.file.buffer);
+        sendSuccess(res, user, 'Avatar updated successfully');
+    } catch (e) { next(e); }
+};
+
 export const getAllUsers = async (req, res, next) => {
     try {
         const { users, pagination } = await userService.getAllUsers(req.query);

@@ -11,7 +11,7 @@ export const createJob = async (clientId, data) => {
 };
 
 export const getJobById = async (id) => {
-    const job = await Job.findById(id).populate('client', 'name email avatar').populate('assignedWorker', 'name avatar');
+    const job = await Job.findById(id).populate('client', 'name email avatar role phone').populate('assignedWorker', 'name avatar');
     if (!job) { const e = new Error('Job not found'); e.statusCode = 404; throw e; }
     return job;
 };
@@ -26,7 +26,7 @@ export const listJobs = async (query) => {
         if (query.skills) filter.requiredSkills = { $in: query.skills.split(',').map(s => s.trim()) };
         if (query.city) filter['location.city'] = new RegExp(query.city, 'i');
         const [jobs, total] = await Promise.all([
-            Job.find(filter).populate('client', 'name avatar').sort(sort).skip(skip).limit(limit),
+            Job.find(filter).populate('client', 'name avatar role phone').sort(sort).skip(skip).limit(limit),
             Job.countDocuments(filter),
         ]);
         return { jobs, pagination: buildPaginationMeta(total, page, limit) };

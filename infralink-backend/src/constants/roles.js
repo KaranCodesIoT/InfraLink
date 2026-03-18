@@ -1,4 +1,7 @@
 export const ROLES = {
+    // Default — no role selected yet
+    UNASSIGNED: 'unassigned',
+
     // Platform admin
     ADMIN: 'admin',
 
@@ -16,6 +19,9 @@ export const ROLES = {
 };
 
 export const ALL_ROLES = Object.values(ROLES);
+
+// Construction directory roles (visible in worker directory)
+export const DIRECTORY_ROLES = ['builder', 'contractor', 'architect', 'labour', 'supplier'];
 
 /**
  * HIRING_RULES — defines which roles a requester can hire.

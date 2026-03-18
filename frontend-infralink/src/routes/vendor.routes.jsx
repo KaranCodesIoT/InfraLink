@@ -9,7 +9,6 @@ const vendorRoutes = [
   {
     element: <RoleRoute roles={[ROLES.CONTRACTOR, ROLES.ARCHITECT, ROLES.SUPPLIER]} />,
     children: [
-      { path: ROUTES.DASHBOARD, element: <VendorDashboard /> },
       // Other vendor-specific routes
     ],
   },

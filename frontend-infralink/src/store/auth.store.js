@@ -60,6 +60,37 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  updateProfile: async (userId, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.patch(`/users/${userId}`, data);
+      // Refresh user state from server
+      const { data: me } = await api.get('/auth/me');
+      set({ user: me.data, isLoading: false });
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  uploadAvatar: async (userId, file) => {
+    set({ isLoading: true, error: null });
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      await api.post(`/users/${userId}/avatar`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      // Refresh user state to get the new avatar URL
+      const { data: me } = await api.get('/auth/me');
+      set({ user: me.data, isLoading: false });
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
   clearError: () => set({ error: null }),
 }));
 

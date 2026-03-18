@@ -82,10 +82,10 @@ export default function ClientDashboard() {
     },
     {
       id: 6,
-      title: 'Bidding Contract',
+      title: 'Available Jobs',
       path: ROUTES.JOBS,
       icon: FileText,
-      description: 'Open tenders and project bidding opportunities.',
+      description: 'Find and apply to available jobs posted by users.',
       color: 'bg-rose-500',
       count: 'Live',
     },
@@ -142,7 +142,7 @@ export default function ClientDashboard() {
           {categories.map((category) => (
             <Link
               key={category.id}
-              to={category.path || `${ROUTES.DIRECTORY}?role=${category.role}`}
+              to={category.path || `/directory/browse?role=${category.role}`}
               className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-xl hover:shadow-gray-100 hover:-translate-y-1 transition-all group overflow-hidden relative"
             >
               <div className={`absolute top-0 right-0 w-24 h-24 ${category.color} opacity-5 -mr-8 -mt-8 rounded-full group-hover:scale-150 transition-transform duration-500`} />
@@ -176,7 +176,7 @@ export default function ClientDashboard() {
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-8 py-5 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-900">Active Industry Projects</h2>
-          <Link to={ROUTES.PROJECTS} className="text-orange-600 hover:text-orange-700 text-sm font-bold">Manage All</Link>
+          <Link to={ROUTES.JOBS} className="text-orange-600 hover:text-orange-700 text-sm font-bold">Manage All</Link>
         </div>
         <div className="p-12 text-center">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">

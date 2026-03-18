@@ -2,7 +2,7 @@ import User from '../users/user.model.js';
 import { hashPassword, comparePassword } from '../../utils/encryption.utils.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/token.utils.js';
 
-export const register = async ({ name, email, password, role, phone }) => {
+export const register = async ({ name, email, password, role, phone, location }) => {
     const existing = await User.findOne({ email });
     if (existing) {
         const err = new Error('Email already in use');
@@ -12,7 +12,8 @@ export const register = async ({ name, email, password, role, phone }) => {
     }
 
     const hashed = await hashPassword(password);
-    const user = await User.create({ name, email, password: hashed, role, phone });
+    const assignedRole = role || 'unassigned';
+    const user = await User.create({ name, email, password: hashed, role: assignedRole, phone, location });
 
     const accessToken = signAccessToken({ id: user._id, role: user.role });
     const refreshToken = signRefreshToken({ id: user._id });
@@ -20,7 +21,7 @@ export const register = async ({ name, email, password, role, phone }) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    return { user: { _id: user._id, name, email, role }, accessToken, refreshToken };
+    return { user: { _id: user._id, name, email, role: user.role }, accessToken, refreshToken };
 };
 
 export const login = async ({ email, password }) => {

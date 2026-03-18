@@ -9,7 +9,6 @@ const workerRoutes = [
   {
     element: <RoleRoute roles={[ROLES.WORKER, ROLES.LABOUR]} />,
     children: [
-      { path: ROUTES.DASHBOARD, element: <WorkerDashboard /> },
       // Other worker-specific routes
     ],
   },

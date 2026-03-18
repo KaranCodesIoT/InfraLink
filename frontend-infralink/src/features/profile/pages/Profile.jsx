@@ -1,12 +1,19 @@
-import { User, MapPin, Mail, Phone, Briefcase, Calendar, Edit2 } from 'lucide-react';
+import { User, MapPin, Mail, Phone, Briefcase, Calendar, Edit2, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../../../store/auth.store.js';
 import { ROUTES } from '../../../constants/routes.js';
+import { ROLE_LABELS } from '../../../constants/roles.js';
 
 export default function Profile() {
   const { user } = useAuthStore();
 
   if (!user) return null;
+
+  const roleLabel = ROLE_LABELS[user.role] || user.role;
+  const isUnassigned = !user.role || user.role === 'unassigned';
+  const locationStr = user.location?.city
+    ? [user.location.city, user.location.state].filter(Boolean).join(', ')
+    : null;
 
   return (
     <div className="max-w-4xl mx-auto py-6 space-y-6">
@@ -34,9 +41,30 @@ export default function Profile() {
 
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-            <p className="text-gray-500 font-medium mt-1">
-              Role: <span className="text-gray-900 capitalize">{user.role.replace('_', ' ')}</span>
-            </p>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              {isUnassigned ? (
+                <span className="px-2.5 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full border border-gray-200">
+                  Role not set — <Link to={ROUTES.PROFILE_EDIT} className="text-orange-600 underline">Set your role</Link>
+                </span>
+              ) : (
+                <span className="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full border border-orange-200">
+                  {roleLabel}
+                </span>
+              )}
+              {locationStr && (
+                <span className="flex items-center gap-1 text-sm text-gray-500">
+                  <MapPin className="w-3.5 h-3.5" /> {locationStr}
+                </span>
+              )}
+              {user.experience && (
+                <span className="flex items-center gap-1 text-sm text-gray-500">
+                  <Award className="w-3.5 h-3.5" /> {user.experience}
+                </span>
+              )}
+            </div>
+            {user.bio && (
+              <p className="text-sm text-gray-600 mt-3 max-w-2xl leading-relaxed">{user.bio}</p>
+            )}
           </div>
         </div>
       </div>
@@ -48,26 +76,24 @@ export default function Profile() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3 text-sm">
-              <Mail className="w-5 h-5 text-gray-400 shrink-0" />
+              <Mail className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
               <div>
                 <p className="text-gray-500 text-xs">Email</p>
                 <p className="text-gray-900 font-medium">{user.email}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 text-sm">
-              <Phone className="w-5 h-5 text-gray-400 shrink-0" />
+              <Phone className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
               <div>
                 <p className="text-gray-500 text-xs">Phone</p>
                 <p className="text-gray-900 font-medium">{user.phone || 'Not provided'}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 text-sm">
-              <MapPin className="w-5 h-5 text-gray-400 shrink-0" />
+              <MapPin className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
               <div>
                 <p className="text-gray-500 text-xs">Location</p>
-                <p className="text-gray-900 font-medium">
-                  {user.location?.city ? `${user.location.city}, ${user.location.state || ''}` : 'Not provided'}
-                </p>
+                <p className="text-gray-900 font-medium">{locationStr || 'Not provided'}</p>
               </div>
             </div>
           </div>
@@ -78,10 +104,17 @@ export default function Profile() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">Professional Details</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <p className="text-gray-500 text-xs mb-1">Company / Organization</p>
+              <p className="text-gray-500 text-xs mb-1">Role</p>
               <p className="text-gray-900 font-medium flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-gray-400" />
-                {user.companyName || 'N/A'}
+                {isUnassigned ? <span className="text-gray-400 italic">Not set</span> : roleLabel}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 text-xs mb-1">Experience</p>
+              <p className="text-gray-900 font-medium flex items-center gap-2">
+                <Award className="w-4 h-4 text-gray-400" />
+                {user.experience || <span className="text-gray-400 italic">Not provided</span>}
               </p>
             </div>
             <div>
@@ -98,13 +131,19 @@ export default function Profile() {
             {user.skills && user.skills.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {user.skills.map((skill, index) => (
-                  <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg border border-gray-200">
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-orange-50 text-orange-700 text-sm font-medium rounded-lg border border-orange-200"
+                  >
                     {skill}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 italic">No skills added yet.</p>
+              <p className="text-sm text-gray-400 italic">
+                No skills added yet.{' '}
+                <Link to={ROUTES.PROFILE_EDIT} className="text-orange-600 underline">Add skills</Link>
+              </p>
             )}
           </div>
         </div>

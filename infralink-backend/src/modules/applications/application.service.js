@@ -13,7 +13,7 @@ export const apply = async (workerId, { job: jobId, coverLetter, proposedRate })
 export const listApplicationsForJob = async (jobId, query) => {
     const { page, limit, skip, sort } = getPagination(query);
     const [applications, total] = await Promise.all([
-        Application.find({ job: jobId }).populate('worker', 'name avatar').sort(sort).skip(skip).limit(limit),
+        Application.find({ job: jobId }).populate('worker', 'name avatar role phone').sort(sort).skip(skip).limit(limit),
         Application.countDocuments({ job: jobId }),
     ]);
     return { applications, pagination: buildPaginationMeta(total, page, limit) };

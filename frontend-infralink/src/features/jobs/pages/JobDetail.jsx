@@ -11,9 +11,10 @@ export default function JobDetail() {
   const { toast } = useUIStore();
   
   const [job, setJob] = useState(null);
+  const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingApps, setIsLoadingApps] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -27,6 +28,25 @@ export default function JobDetail() {
     };
     fetchJob();
   }, [id, toast]);
+
+  const isClient = user?._id === job?.client?._id || user?._id === job?.clientId?._id || user?._id === job?.clientId;
+
+  useEffect(() => {
+    if (job && isClient) {
+      const fetchApplications = async () => {
+        setIsLoadingApps(true);
+        try {
+           const { data } = await api.get(`/applications/job/${id}`);
+           setApplications(data.data);
+        } catch (err) {
+           console.error("Failed to load applications", err);
+        } finally {
+           setIsLoadingApps(false);
+        }
+      };
+      fetchApplications();
+    }
+  }, [job, isClient, id]);
 
   const handleApply = async () => {
     setIsApplying(true);
@@ -53,8 +73,6 @@ export default function JobDetail() {
   if (!job) {
     return <div className="text-center py-20 text-gray-500">Job not found.</div>;
   }
-
-  const isClient = user?._id === job.clientId?._id || user?._id === job.clientId;
 
   return (
     <div className="max-w-4xl mx-auto py-6">
@@ -114,12 +132,61 @@ export default function JobDetail() {
 
           <h3 className="text-xl font-bold text-gray-900 mb-4">Skills & Requirements</h3>
           <div className="flex flex-wrap gap-2 mb-8">
-            {job.skillsRequired?.map((skill, index) => (
+            {job.skillsRequired?.length > 0 ? job.skillsRequired.map((skill, index) => (
               <span key={index} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg border border-gray-200">
                 {skill}
               </span>
-            ))}
+            )) : <span className="text-gray-500 italic">No specific skills listed.</span>}
           </div>
+
+          {isClient && (
+            <div className="mt-12 pt-8 border-t border-gray-200">
+               <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                 Applications ({applications.length})
+               </h3>
+               
+               {isLoadingApps ? (
+                 <div className="flex justify-center p-8">
+                   <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                 </div>
+               ) : applications.length === 0 ? (
+                 <div className="bg-gray-50 p-8 rounded-xl text-center border border-gray-100">
+                   <p className="text-gray-500">No applications received yet.</p>
+                 </div>
+               ) : (
+                 <div className="space-y-4">
+                   {applications.map((app) => (
+                     <div key={app._id} className="bg-white border border-gray-200 p-6 rounded-xl flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+                       <div className="flex items-center gap-4">
+                         {app.worker?.avatar ? (
+                           <img src={app.worker.avatar} alt={app.worker.name} className="w-12 h-12 rounded-full object-cover" />
+                         ) : (
+                           <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-lg">
+                             {app.worker?.name?.charAt(0) || 'W'}
+                           </div>
+                         )}
+                         <div>
+                           <h4 className="font-bold text-gray-900">{app.worker?.name || 'Unknown Worker'}</h4>
+                           <p className="text-sm text-gray-500 uppercase tracking-wider font-semibold">{app.worker?.role}</p>
+                           <p className="text-sm text-gray-600 mt-1">{app.worker?.phone || 'No phone provided'}</p>
+                         </div>
+                       </div>
+                       
+                       <div className="text-right">
+                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                           app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                           app.status === 'shortlisted' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                         }`}>
+                           {app.status.toUpperCase()}
+                         </span>
+                         <p className="text-xs text-gray-400 mt-2">Applied {new Date(app.createdAt).toLocaleDateString()}</p>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+            </div>
+          )}
         </div>
       </div>
     </div>

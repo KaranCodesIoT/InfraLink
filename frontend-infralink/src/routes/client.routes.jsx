@@ -7,7 +7,16 @@ import ClientDashboard from '../features/dashboard/pages/ClientDashboard.jsx';
 
 const clientRoutes = [
   {
-    element: <RoleRoute roles={[ROLES.CLIENT, ROLES.BUILDER, ROLES.NORMAL_USER]} />,
+    element: <RoleRoute roles={[
+      ROLES.CLIENT, 
+      ROLES.BUILDER, 
+      ROLES.NORMAL_USER,
+      ROLES.CONTRACTOR,
+      ROLES.ARCHITECT,
+      ROLES.LABOUR,
+      ROLES.SUPPLIER,
+      ROLES.WORKER
+    ]} />,
     children: [
       { path: ROUTES.DASHBOARD, element: <ClientDashboard /> },
       // Other client-specific routes can go here

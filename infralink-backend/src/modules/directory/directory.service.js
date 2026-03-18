@@ -8,8 +8,8 @@ import { ALL_ROLES } from '../../constants/roles.js';
 export const findProfessionals = async ({ role, page, limit, search }) => {
     const filter = { 
         isActive: true,
-        // Assuming we only want to show verified/active professionals in the directory
-        // isVerified: true 
+        // Hide users who aren't construction professionals
+        role: { $nin: ['unassigned', 'normal_user', 'client', 'admin'] },
     };
 
     // Filter by role if provided and valid
@@ -58,7 +58,7 @@ export const getProfessionalById = async (id) => {
  */
 export const getCountsByRole = async () => {
     const counts = await User.aggregate([
-        { $match: { isActive: true } },
+        { $match: { isActive: true, role: { $nin: ['unassigned', 'normal_user', 'client', 'admin'] } } },
         { $group: { _id: '$role', count: { $sum: 1 } } }
     ]);
 

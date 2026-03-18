@@ -1,4 +1,5 @@
 export const ROLES = {
+  UNASSIGNED: 'unassigned',
   ADMIN: 'admin',
   CLIENT: 'client',
   WORKER: 'worker',
@@ -12,6 +13,9 @@ export const ROLES = {
 
 export const ALL_ROLES = Object.values(ROLES);
 
+// Construction directory roles (shown as cards in the directory dashboard)
+export const DIRECTORY_ROLES = ['builder', 'contractor', 'architect', 'labour', 'supplier'];
+
 // Roles that POST jobs / hire others
 export const HIRING_ROLES = [ROLES.BUILDER, ROLES.CONTRACTOR, ROLES.NORMAL_USER, ROLES.CLIENT, ROLES.ADMIN];
 
@@ -20,6 +24,7 @@ export const WORKER_ROLES = [ROLES.WORKER, ROLES.CONTRACTOR, ROLES.ARCHITECT, RO
 
 // Label map for display
 export const ROLE_LABELS = {
+  [ROLES.UNASSIGNED]: 'Unassigned',
   [ROLES.ADMIN]: 'Admin',
   [ROLES.CLIENT]: 'Client',
   [ROLES.WORKER]: 'Worker',
@@ -27,6 +32,6 @@ export const ROLE_LABELS = {
   [ROLES.BUILDER]: 'Builder / Developer',
   [ROLES.CONTRACTOR]: 'Contractor',
   [ROLES.ARCHITECT]: 'Architect',
-  [ROLES.LABOUR]: 'Labour',
-  [ROLES.SUPPLIER]: 'Supplier',
+  [ROLES.LABOUR]: 'Skilled Labour',
+  [ROLES.SUPPLIER]: 'Material Supplier',
 };

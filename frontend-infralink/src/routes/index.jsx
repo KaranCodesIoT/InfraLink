@@ -17,11 +17,14 @@ import RoleSelect from '../features/auth/pages/RoleSelect.jsx';
 // Main App Pages
 import JobBoard from '../features/jobs/pages/JobBoard.jsx';
 import JobDetail from '../features/jobs/pages/JobDetail.jsx';
-import JobForm from '../features/jobs/pages/JobForm.jsx';
+import PostJob from '../features/jobs/pages/PostJob.jsx';
 import Notifications from '../features/notifications/pages/Notifications.jsx';
 import Profile from '../features/profile/pages/Profile.jsx';
+import EditProfile from '../features/profile/pages/EditProfile.jsx';
 import ProfessionalDirectory from '../features/directory/pages/ProfessionalDirectory.jsx';
 import ProfessionalProfile from '../features/directory/pages/ProfessionalProfile.jsx';
+import WorkerDirectoryDashboard from '../features/directory/pages/WorkerDirectoryDashboard.jsx';
+import CompleteProfile from '../features/auth/pages/CompleteProfile.jsx';
 
 
 // Route chunks
@@ -44,21 +47,24 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       { path: ROUTES.ROLE_SELECT, element: <RoleSelect /> },
+      { path: '/complete-profile', element: <CompleteProfile /> },
       {
         element: <DashboardLayout />,
         children: [
           // Shared routes
           { path: ROUTES.PROFILE, element: <Profile /> },
+          { path: ROUTES.PROFILE_EDIT, element: <EditProfile /> },
           { path: ROUTES.NOTIFICATIONS, element: <Notifications /> },
           { path: ROUTES.JOBS, element: <JobBoard /> },
           { path: ROUTES.JOB_DETAIL, element: <JobDetail /> },
-          { path: ROUTES.DIRECTORY, element: <ProfessionalDirectory /> },
+          { path: ROUTES.DIRECTORY, element: <WorkerDirectoryDashboard /> },
+          { path: '/directory/browse', element: <ProfessionalDirectory /> },
           { path: ROUTES.DIRECTORY_DETAIL, element: <ProfessionalProfile /> },
 
           {
             element: <RoleRoute roles={[ROLES.CLIENT, ROLES.BUILDER, ROLES.NORMAL_USER, ROLES.CONTRACTOR]} />,
             children: [
-              { path: ROUTES.JOB_POST, element: <JobForm /> },
+              { path: ROUTES.JOB_POST, element: <PostJob /> },
             ]
           },
           
