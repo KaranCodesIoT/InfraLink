@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema(
             city: String,
             state: String,
         },
+        followingBuilders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BuilderProfile' }],
+        followingContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ContractorProfile' }],
     },
     { timestamps: true }
 );

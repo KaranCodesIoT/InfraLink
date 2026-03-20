@@ -1,6 +1,6 @@
 const corsOptions = {
     origin: (origin, callback) => {
-        const allowed = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',').map((o) => o.trim());
+        const allowed = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:5173').split(',').map((o) => o.trim());
         // Allow requests with no origin (mobile apps, curl, etc.)
         if (!origin || allowed.includes('*') || allowed.includes(origin)) {
             callback(null, true);

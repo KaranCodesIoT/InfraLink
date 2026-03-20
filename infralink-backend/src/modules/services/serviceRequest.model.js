@@ -33,7 +33,8 @@ const serviceRequestSchema = new mongoose.Schema(
             address: String,
             city: String,
             state: String,
-            coordinates: { type: [Number], index: '2dsphere' },
+            type: { type: String, enum: ['Point'], default: 'Point' },
+            coordinates: { type: [Number] },
         },
         price: {
             amount: { type: Number, min: 0 },

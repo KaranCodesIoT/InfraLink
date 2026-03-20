@@ -25,7 +25,9 @@ import ProfessionalDirectory from '../features/directory/pages/ProfessionalDirec
 import ProfessionalProfile from '../features/directory/pages/ProfessionalProfile.jsx';
 import WorkerDirectoryDashboard from '../features/directory/pages/WorkerDirectoryDashboard.jsx';
 import CompleteProfile from '../features/auth/pages/CompleteProfile.jsx';
-
+import BuilderOnboarding from '../features/builders/pages/BuilderOnboarding.jsx';
+import ContractorOnboarding from '../features/contractors/pages/ContractorOnboarding.jsx';
+import ContractorProfile from '../features/directory/pages/ContractorProfile.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -48,6 +50,8 @@ const router = createBrowserRouter([
     children: [
       { path: ROUTES.ROLE_SELECT, element: <RoleSelect /> },
       { path: '/complete-profile', element: <CompleteProfile /> },
+      { path: '/builder-onboarding', element: <BuilderOnboarding /> },
+      { path: '/contractor-onboarding', element: <ContractorOnboarding /> },
       {
         element: <DashboardLayout />,
         children: [
@@ -60,6 +64,7 @@ const router = createBrowserRouter([
           { path: ROUTES.DIRECTORY, element: <WorkerDirectoryDashboard /> },
           { path: '/directory/browse', element: <ProfessionalDirectory /> },
           { path: ROUTES.DIRECTORY_DETAIL, element: <ProfessionalProfile /> },
+          { path: '/directory/contractor/:id', element: <ContractorProfile /> },
 
           {
             element: <RoleRoute roles={[ROLES.CLIENT, ROLES.BUILDER, ROLES.NORMAL_USER, ROLES.CONTRACTOR]} />,

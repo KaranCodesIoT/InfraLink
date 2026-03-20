@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { MapPin, User, ArrowRight, Briefcase } from 'lucide-react';
+import { MapPin, User, ArrowRight, Briefcase, Star } from 'lucide-react';
 import { ROUTES } from '../../../constants/routes.js';
 
 export default function ProfessionalCard({ professional }) {
-  const { _id, name, role, location, avatar, skills = [] } = professional;
+  const { _id, name, role, location, avatar, skills = [], companyName, yearsOfExperience } = professional;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
@@ -19,11 +19,23 @@ export default function ProfessionalCard({ professional }) {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
-                {name}
+                {companyName || name}
               </h3>
               <div className="flex items-center text-sm text-gray-500 mt-0.5 capitalize">
                 <Briefcase className="w-3.5 h-3.5 mr-1" />
                 {role.replace('_', ' ')}
+                {yearsOfExperience !== undefined && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-xs">{yearsOfExperience} Yrs Exp</span>}
+              </div>
+              
+              <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center text-sm font-bold text-gray-900 bg-yellow-50 px-2 py-0.5 rounded-lg border border-yellow-100">
+                  <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400 mr-1" />
+                  {Number(professional.averageRating || 0).toFixed(1)}
+                </div>
+                <div className="text-xs text-gray-500 flex items-center">
+                  <User className="w-3 h-3 mr-1" />
+                  {professional.followersCount || 0} followers
+                </div>
               </div>
             </div>
           </div>
@@ -52,7 +64,7 @@ export default function ProfessionalCard({ professional }) {
 
       <div className="border-t border-gray-50 p-4">
         <Link
-          to={`${ROUTES.DIRECTORY}/${_id}`}
+          to={role === 'contractor' ? `/directory/contractor/${_id}` : `${ROUTES.DIRECTORY}/${_id}`}
           className="w-full flex items-center justify-center space-x-2 text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
         >
           <span>View Detailed Profile</span>

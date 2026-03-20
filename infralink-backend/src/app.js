@@ -37,6 +37,8 @@ import healthRoutes from './modules/health/health.routes.js';
 import aiRoutes from './modules/ai/ai.routes.js';
 import serviceRoutes from './modules/services/service.routes.js';
 import directoryRoutes from './modules/directory/directory.routes.js';
+import builderRoutes from './modules/builders/builder.routes.js';
+import contractorRoutes from './modules/contractors/contractor.routes.js';
 
 const app = express();
 
@@ -87,6 +89,13 @@ app.use(`${V1}/search`, searchRoutes);
 app.use(`${V1}/health`, healthRoutes);
 app.use(`${V1}/ai`, aiRoutes);
 app.use(`${V1}/directory`, directoryRoutes);
+app.use(`${V1}/builders`, builderRoutes);
+app.use(`${V1}/contractors`, contractorRoutes);
+
+// Root Route (Welcome)
+app.get('/', (req, res) => {
+    res.json({ success: true, message: '🚀 InfraLink API is running normally!' });
+});
 
 // 404 handler
 app.use((_req, res) => {

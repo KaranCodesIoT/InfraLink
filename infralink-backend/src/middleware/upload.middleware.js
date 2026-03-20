@@ -20,6 +20,7 @@ const upload = multer({ storage, fileFilter, limits: { fileSize: MAX_SIZE } });
 
 export const uploadSingle = (fieldName) => upload.single(fieldName);
 export const uploadMultiple = (fieldName, maxCount = 5) => upload.array(fieldName, maxCount);
+export const uploadFields = (fields) => upload.fields(fields);
 
 export const handleMulterError = (err, _req, res, next) => {
     if (err instanceof multer.MulterError) {

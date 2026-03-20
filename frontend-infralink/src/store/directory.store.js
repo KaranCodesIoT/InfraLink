@@ -49,6 +49,150 @@ const useDirectoryStore = create((set, get) => ({
     }
   },
 
+  followBuilder: async (builderProfileId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/builders/${builderProfileId}/follow`);
+      set((state) => {
+        if (state.selectedProfessional && state.selectedProfessional.builderProfile?._id === builderProfileId) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              followersCount: data.data.followersCount,
+              isFollowing: data.data.isFollowing
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  unfollowBuilder: async (builderProfileId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/builders/${builderProfileId}/unfollow`);
+      set((state) => {
+        if (state.selectedProfessional && state.selectedProfessional.builderProfile?._id === builderProfileId) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              followersCount: data.data.followersCount,
+              isFollowing: data.data.isFollowing
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  rateBuilder: async (builderProfileId, value, review) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/builders/${builderProfileId}/rate`, { value, review });
+      set((state) => {
+        if (state.selectedProfessional && state.selectedProfessional.builderProfile?._id === builderProfileId) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              averageRating: data.data.averageRating,
+              totalReviews: data.data.totalReviews
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  followContractor: async (contractorProfileId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/contractors/${contractorProfileId}/follow`);
+      set((state) => {
+        if (state.selectedProfessional && (state.selectedProfessional.contractorProfile?._id === contractorProfileId || state.selectedProfessional._id === contractorProfileId)) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              followersCount: data.data.followersCount,
+              isFollowing: data.data.isFollowing
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  unfollowContractor: async (contractorProfileId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/contractors/${contractorProfileId}/unfollow`);
+      set((state) => {
+        if (state.selectedProfessional && (state.selectedProfessional.contractorProfile?._id === contractorProfileId || state.selectedProfessional._id === contractorProfileId)) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              followersCount: data.data.followersCount,
+              isFollowing: data.data.isFollowing
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  rateContractor: async (contractorProfileId, value, review) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/contractors/${contractorProfileId}/rate`, { value, review });
+      set((state) => {
+        if (state.selectedProfessional && (state.selectedProfessional.contractorProfile?._id === contractorProfileId || state.selectedProfessional._id === contractorProfileId)) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              averageRating: data.data.averageRating,
+              totalReviews: data.data.totalReviews
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
   clearSelectedProfessional: () => set({ selectedProfessional: null }),
   clearError: () => set({ error: null }),
 }));

@@ -2,6 +2,7 @@
   "name": "infralink-backend",
   "version": "1.0.0",
   "description": "AI-powered construction hiring marketplace backend",
+  "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

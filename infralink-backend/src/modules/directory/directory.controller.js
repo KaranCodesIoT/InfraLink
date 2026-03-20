@@ -31,7 +31,7 @@ export const getDirectoryStats = async (req, res, next) => {
 export const getProfessionalById = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const professional = await directoryService.getProfessionalById(id);
+        const professional = await directoryService.getProfessionalById(id, req.user._id);
         
         if (!professional) {
             return sendError(res, 'Professional not found', HTTP_STATUS.NOT_FOUND);

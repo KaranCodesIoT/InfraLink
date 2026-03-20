@@ -1,0 +1,16 @@
+/* auth.css */
+.auth-bg {
+    background-color: #ffffff;
+}
+
+.auth-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.auth-brand__mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
