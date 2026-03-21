@@ -1,6 +1,7 @@
 import User from '../users/user.model.js';
 import BuilderProfile from '../builders/builderProfile.model.js';
 import ContractorProfile from '../contractors/contractorProfile.model.js';
+import WorkerProfile from '../workers/workerProfile.model.js';
 import { buildPaginationMeta } from '../../utils/pagination.utils.js';
 import { ALL_ROLES } from '../../constants/roles.js';
 
@@ -64,6 +65,16 @@ export const findProfessionals = async ({ role, page, limit, search }) => {
                 prof.followersCount = cp.followersCount || 0;
                 prof.averageRating = cp.averageRating || 0;
             }
+        } else if (prof.role === 'worker') {
+            const wp = await WorkerProfile.findOne({ user: prof._id })
+                .select('skills yearsOfExperience followersCount averageRating trade')
+                .lean();
+            if (wp) {
+                prof.skills = wp.skills || [];
+                prof.yearsOfExperience = wp.yearsOfExperience;
+                prof.followersCount = wp.followersCount || 0;
+                prof.averageRating = wp.averageRating || 0;
+            }
         }
     }
 
@@ -115,6 +126,23 @@ export const getProfessionalById = async (id, requesterUserId) => {
             
             if (requesterUserId && contractorProfile.followers) {
                 user.isFollowing = contractorProfile.followers.some(f => f.toString() === requesterUserId.toString());
+            } else {
+                user.isFollowing = false;
+            }
+        }
+    } else if (user.role === 'worker') {
+        const workerProfile = await WorkerProfile.findOne({ user: id }).lean();
+        if (workerProfile) {
+            user.workerProfile = workerProfile;
+            user.skills = workerProfile.skills || [];
+            
+            // Interaction stats
+            user.followersCount = workerProfile.followersCount || 0;
+            user.averageRating = workerProfile.averageRating || 0;
+            user.totalReviews = workerProfile.totalReviews || 0;
+            
+            if (requesterUserId && workerProfile.followers) {
+                user.isFollowing = workerProfile.followers.some(f => f.toString() === requesterUserId.toString());
             } else {
                 user.isFollowing = false;
             }

@@ -1,6 +1,6 @@
 import ServiceRequest from './serviceRequest.model.js';
 import { getPagination, buildPaginationMeta } from '../../utils/pagination.utils.js';
-import { getOrCreateConversation } from '../messaging/message.service.js';
+import { getOrCreateDirectConversation } from '../messaging/message.service.js';
 import { emitNotification } from '../../events/notification.events.js';
 import { canHire, getAllowedProviderRoles } from '../../constants/roles.js';
 import logger from '../../utils/logger.js';
@@ -109,7 +109,7 @@ export const acceptProvider = async (serviceRequestId, requesterId, applicationI
 
     // Auto-create conversation thread between requester and provider
     try {
-        const conversation = await getOrCreateConversation(requesterId, application.provider, null);
+        const conversation = await getOrCreateDirectConversation(requesterId, application.provider);
         sr.conversation = conversation._id;
     } catch (convErr) {
         logger.warn(`Could not create conversation for service ${sr._id}: ${convErr.message}`);

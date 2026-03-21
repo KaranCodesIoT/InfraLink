@@ -86,7 +86,7 @@ export const saveStep3 = async (userId, data) => {
         servicesOffered: data.servicesOffered,
         pricingModel: data.pricingModel,
         teamSize: data.teamSize,
-        pastProjects: data.pastProjects
+        pastProjects: data.pastProjects || profile.professionalDetails?.pastProjects || []
     };
 
     if (profile.onboardingStepCompleted < 3) {
@@ -96,6 +96,49 @@ export const saveStep3 = async (userId, data) => {
     await profile.save();
 
     return profile;
+};
+
+// ─── Past Projects CRUD ───────────────────────────────────────────────────────
+
+export const addPastProject = async (userId, projectData) => {
+    let profile = await BuilderProfile.findOne({ user: userId });
+    if (!profile) profile = await BuilderProfile.create({ user: userId });
+
+    if (!profile.professionalDetails) profile.professionalDetails = {};
+    if (!profile.professionalDetails.pastProjects) profile.professionalDetails.pastProjects = [];
+
+    // Enforce legal declaration timestamp
+    const project = {
+        ...projectData,
+        legalDeclaration: {
+            ...projectData.legalDeclaration,
+            declaredAt: new Date(),
+        },
+        verificationStatus: 'self_declared',
+        createdAt: new Date(),
+    };
+
+    profile.professionalDetails.pastProjects.push(project);
+    await profile.save();
+
+    // Return the newly added project (last one in array)
+    const addedProject = profile.professionalDetails.pastProjects[profile.professionalDetails.pastProjects.length - 1];
+    return addedProject;
+};
+
+export const removePastProject = async (userId, projectId) => {
+    const profile = await BuilderProfile.findOne({ user: userId });
+    if (!profile) throw Object.assign(new Error('Builder profile not found'), { statusCode: 404 });
+
+    const projectIndex = profile.professionalDetails.pastProjects.findIndex(
+        p => p._id.toString() === projectId
+    );
+    if (projectIndex === -1) throw Object.assign(new Error('Project not found'), { statusCode: 404 });
+
+    profile.professionalDetails.pastProjects.splice(projectIndex, 1);
+    await profile.save();
+
+    return { message: 'Project removed successfully' };
 };
 
 export const verifyBuilder = async (builderProfileId) => {

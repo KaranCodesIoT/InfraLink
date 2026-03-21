@@ -1,7 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore, useAuthStore } from '../../../store/index.js';
-import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Calendar, ShieldCheck, HardHat, Pencil } from 'lucide-react';
+import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Calendar, ShieldCheck, HardHat, Pencil, MessageCircle, Camera, Users, Briefcase, Plus } from 'lucide-react';
+import FollowButton from '../../network/components/FollowButton.jsx';
+import BlockButton from '../../network/components/BlockButton.jsx';
+import useNetworkStore from '../../../store/network.store.js';
+import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
+import AddProjectModal from '../../builders/components/AddProjectModal.jsx';
 
 export default function ProfessionalProfile() {
   const { id } = useParams();
@@ -10,65 +15,36 @@ export default function ProfessionalProfile() {
     selectedProfessional, 
     getProfessionalById, 
     clearSelectedProfessional, 
-    followBuilder, 
-    unfollowBuilder, 
     rateBuilder,
-    followContractor,
-    unfollowContractor,
     rateContractor
   } = useDirectoryStore();
   const isLoading = useDirectoryStore(state => state.isLoading);
   const error = useDirectoryStore(state => state.error);
   const { user: currentUser } = useAuthStore();
-  const [followLoading, setFollowLoading] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [ratingLoading, setRatingLoading] = useState(false);
+  const [canMessage, setCanMessage] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
+  const prevFollowStatusRef = useRef(null);
   const { toast } = useUIStore();
+  const { uploadAvatar } = useAuthStore();
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
   const isOwner = !!(currentUser?._id && selectedProfessional?._id && 
     currentUser._id.toString() === selectedProfessional._id.toString());
   console.log('[ProfessionalProfile] isOwner:', isOwner, 'currentUser:', currentUser?._id, 'profile:', selectedProfessional?._id);
 
-  const handleFollowToggle = async () => {
-    if (!currentUser) return toast.error('Please log in to follow professionals');
-    
-    const isBuilder = role === 'builder';
-    const profileId = isBuilder ? builderProfile?._id : contractorProfile?._id;
-    
-    if (!profileId) return toast.error(`${isBuilder ? 'Builder' : 'Contractor'} profile not found`);
-
-    setFollowLoading(true);
-    try {
-      if (selectedProfessional.isFollowing) {
-        if (isBuilder) {
-          await unfollowBuilder(profileId);
-        } else {
-          await unfollowContractor(profileId);
-        }
-        toast.success(`Unfollowed ${displayName}`);
-      } else {
-        if (isBuilder) {
-          await followBuilder(profileId);
-        } else {
-          await followContractor(profileId);
-        }
-        toast.success(`Following ${displayName}`);
-      }
-    } catch (err) {
-      // Store handles error state
-    } finally {
-      setFollowLoading(false);
-    }
-  };
-
   const handleRateSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) return toast.error('Please log in to leave a review');
-    
+    if (!selectedProfessional) return;
+
+    const role = selectedProfessional.role;
     const isBuilder = role === 'builder';
-    const profileId = isBuilder ? builderProfile?._id : contractorProfile?._id;
+    const profileId = isBuilder ? selectedProfessional.builderProfile?._id : selectedProfessional.contractorProfile?._id;
     
     if (!profileId) return toast.error(`${isBuilder ? 'Builder' : 'Contractor'} profile not found`);
     if (rating === 0) return toast.error('Please select a star rating');
@@ -85,6 +61,31 @@ export default function ProfessionalProfile() {
       setReviewText('');
     } catch (err) {} 
     finally { setRatingLoading(false); }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      await uploadAvatar(currentUser._id, file);
+      // Refresh the profile to show the new avatar
+      await getProfessionalById(id);
+      toast.success('Profile picture updated!');
+    } catch (err) {
+      toast.error('Failed to upload profile picture');
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
   };
 
   useEffect(() => {
@@ -123,9 +124,12 @@ export default function ProfessionalProfile() {
     );
   }
 
-  const { name, role, location, avatar, skills = [], createdAt, builderProfile, contractorProfile } = selectedProfessional;
-  const displayName = builderProfile?.companyName || contractorProfile?.fullName || name;
-  const onboardingPath = role === 'builder' ? '/builder-onboarding' : '/contractor-onboarding';
+  const { name, role, location, avatar, skills = [], createdAt, builderProfile, contractorProfile, workerProfile } = selectedProfessional;
+  const displayName = builderProfile?.companyName || contractorProfile?.fullName || workerProfile?.fullName || name;
+  const onboardingPath = role === 'builder' ? '/builder-onboarding' 
+    : role === 'contractor' ? '/contractor-onboarding' 
+    : role === 'worker' ? '/worker-onboarding'
+    : '/profile/edit';
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -142,42 +146,47 @@ export default function ProfessionalProfile() {
         <div className="space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex flex-col items-center">
-              <div className="w-32 h-32 rounded-3xl bg-orange-100 flex items-center justify-center overflow-hidden mb-4 shadow-inner">
-                {avatar ? (
-                  <img src={avatar} alt={name} className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-16 h-16 text-orange-600" />
+              <div className="relative group mb-4">
+                <div className="w-32 h-32 rounded-3xl bg-orange-100 flex items-center justify-center overflow-hidden shadow-inner">
+                  {avatar ? (
+                    <img src={resolveAvatarUrl(avatar)} alt={name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-16 h-16 text-orange-600" />
+                  )}
+                </div>
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={avatarUploading}
+                      className="absolute inset-0 rounded-3xl bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-all cursor-pointer"
+                    >
+                      {avatarUploading ? (
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      ) : (
+                        <Camera className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                      )}
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                    />
+                  </>
                 )}
               </div>
               
               <div className="text-center w-full">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-1">
                   <h1 className="text-2xl font-bold text-gray-900">{displayName}</h1>
-                  {!isOwner && (!!builderProfile || !!contractorProfile) && (
-                    <button
-                      onClick={handleFollowToggle}
-                      disabled={followLoading}
-                      className={`flex items-center justify-center py-1.5 px-4 rounded-lg text-sm font-bold transition-all ${
-                        selectedProfessional.isFollowing 
-                          ? 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-100'
-                      } disabled:opacity-70`}
-                    >
-                      {followLoading && <Loader2 className="w-3 h-3 mr-2 animate-spin" />}
-                      {selectedProfessional.isFollowing ? 'Unfollow' : 'Follow'}
-                    </button>
-                  )}
                 </div>
-                
                 <p className="text-orange-600 font-medium capitalize text-xs bg-orange-50 inline-block px-3 py-1 rounded-full mb-4">
                   {builderProfile?.profileType || (role === 'contractor' ? 'Contractor' : role.replace('_', ' '))}
                 </p>
 
-                <div className="flex items-center justify-center gap-6 py-4 border-y border-gray-50 mb-6">
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900">{selectedProfessional.followersCount || 0}</p>
-                    <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Followers</p>
-                  </div>
+                <div className="flex items-center justify-center gap-4 py-4 border-y border-gray-50 mb-6 flex-wrap">
                   <div className="text-center">
                     <p className="text-lg font-bold text-gray-900 flex items-center justify-center">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
@@ -189,7 +198,74 @@ export default function ProfessionalProfile() {
                     <p className="text-lg font-bold text-gray-900">{selectedProfessional.totalReviews || 0}</p>
                     <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Reviews</p>
                   </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-blue-500 mr-1" />
+                      {selectedProfessional.followersCount || 0}
+                    </p>
+                    <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Followers</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900">{selectedProfessional.followingCount || 0}</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Following</p>
+                  </div>
                 </div>
+
+                {/* Follow / Block / Message Actions — only for visitors */}
+                {!isOwner && selectedProfessional?._id && (
+                  <div className="w-full space-y-2 pt-2">
+                    <div className="flex gap-2 justify-center">
+                      <FollowButton
+                        targetId={selectedProfessional._id}
+                        onStatusChange={(s, data) => {
+                          if (data) {
+                            const hasFollow = (s === 'accepted' || s === 'following' || data.is_following_back);
+                            setCanMessage(hasFollow);
+                          } else {
+                            setCanMessage(false);
+                          }
+                          // Instant optimistic UI update
+                          const prevStatus = prevFollowStatusRef.current;
+                          if (prevStatus === 'not_following' && (s === 'accepted' || s === 'following')) {
+                            useDirectoryStore.setState(state => ({
+                              selectedProfessional: state.selectedProfessional ? { 
+                                ...state.selectedProfessional, 
+                                followersCount: (state.selectedProfessional.followersCount || 0) + 1 
+                              } : null
+                            }));
+                          } else if ((prevStatus === 'accepted' || prevStatus === 'following') && s === 'not_following') {
+                            useDirectoryStore.setState(state => ({
+                              selectedProfessional: state.selectedProfessional ? { 
+                                ...state.selectedProfessional, 
+                                followersCount: Math.max(0, (state.selectedProfessional.followersCount || 0) - 1) 
+                              } : null
+                            }));
+                          }
+                          if (s !== 'loading' && s !== 'pending') {
+                            prevFollowStatusRef.current = s;
+                          }
+                        }}
+                      />
+                      <BlockButton targetId={selectedProfessional._id} />
+                    </div>
+                    {canMessage ? (
+                      <button
+                        onClick={() => navigate(`/messages/${selectedProfessional._id}`)}
+                        className="w-full border border-blue-200 bg-blue-50 text-blue-700 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="w-4 h-4" /> Message
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full border border-gray-200 bg-gray-50 text-gray-400 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                        title="Follow this user to send messages"
+                      >
+                        <MessageCircle className="w-4 h-4" /> Message
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -269,7 +345,8 @@ export default function ProfessionalProfile() {
                 <p className="font-medium text-gray-900">
                   {builderProfile?.yearsOfExperience !== undefined 
                     ? `${builderProfile.yearsOfExperience} years` 
-                    : (contractorProfile?.experience !== undefined ? `${contractorProfile.experience} years` : 'Not specified')}
+                    : (contractorProfile?.experience !== undefined ? `${contractorProfile.experience} years` : 
+                       (workerProfile?.yearsOfExperience !== undefined ? `${workerProfile.yearsOfExperience} years` : 'Not specified'))}
                 </p>
               </div>
               <div>
@@ -370,45 +447,102 @@ export default function ProfessionalProfile() {
             </div>
 
             <div className="mt-4">
-              <p className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Past Projects Gallery</p>
-              {(builderProfile?.professionalDetails?.pastProjects?.length > 0 || contractorProfile?.professionalDetails?.portfolio?.length > 0) ? (
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Past Projects Gallery</p>
+                {isOwner && (builderProfile?.professionalDetails?.pastProjects?.length > 0 || contractorProfile?.professionalDetails?.portfolio?.length > 0 || workerProfile?.portfolio?.length > 0) && (
+                  <button 
+                    onClick={() => setIsProjectModalOpen(true)}
+                    className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors flex items-center"
+                  >
+                    + Add Project
+                  </button>
+                )}
+              </div>
+
+              {(builderProfile?.professionalDetails?.pastProjects?.length > 0 || contractorProfile?.professionalDetails?.portfolio?.length > 0 || workerProfile?.portfolio?.length > 0) ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {(builderProfile?.professionalDetails?.pastProjects || contractorProfile?.professionalDetails?.portfolio).map((project, idx) => (
-                    <div key={idx} className="group bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 transition-all hover:shadow-md">
-                      {project.images?.length > 0 && (
-                        <div className="h-40 w-full overflow-hidden">
+                  {(builderProfile?.professionalDetails?.pastProjects || contractorProfile?.professionalDetails?.portfolio || workerProfile?.portfolio).map((project, idx) => (
+                    <div key={idx} className="group bg-white rounded-2xl overflow-hidden border border-gray-100 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm flex flex-col">
+                      {project.media?.length > 0 || project.images?.length > 0 ? (
+                        <div className="h-48 w-full overflow-hidden relative">
                           <img 
-                            src={project.images[0]} 
+                            src={resolveAvatarUrl(project.media?.[0]?.url || project.images?.[0])} 
                             alt={project.title} 
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                           />
+                          {(project.projectType || project.role) && (
+                            <div className="absolute top-3 left-3 flex gap-2">
+                              {project.projectType && <span className="bg-white/90 backdrop-blur-sm text-gray-900 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">{project.projectType}</span>}
+                              {project.role && <span className="bg-orange-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">{project.role}</span>}
+                            </div>
+                          )}
+                          {(project.media?.length > 1 || project.images?.length > 1) && (
+                            <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded-lg font-medium">
+                              +{project.media ? project.media.length - 1 : project.images.length - 1} photos
+                            </div>
+                          )}
                         </div>
+                      ) : (
+                        <div className="h-10 w-full bg-gray-50 border-b border-gray-100"></div>
                       )}
-                      <div className="p-4">
-                        <h3 className="font-bold text-gray-900 leading-tight">{project.title}</h3>
-                        {project.location && (
-                          <p className="text-xs text-gray-500 flex items-center mt-1.5">
-                            <MapPin className="w-3 h-3 mr-1 text-orange-500" />
-                            {project.location}
-                          </p>
-                        )}
+                      <div className="p-5 flex-1 flex flex-col">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-gray-900 text-lg leading-tight group-hover:text-orange-600 transition-colors">{project.title}</h3>
+                          {project.verificationStatus === 'verified' ? (
+                            <span className="shrink-0 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-100">
+                              <ShieldCheck className="w-3 h-3" /> Verified
+                            </span>
+                          ) : (
+                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
+                              Self-Declared
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3">
+                          {project.location && (
+                            <p className="text-xs text-gray-600 flex items-center font-medium">
+                              <MapPin className="w-3.5 h-3.5 mr-1 text-orange-400" />
+                              {project.location}
+                            </p>
+                          )}
+                          {project.completionYear && (
+                            <p className="text-xs text-gray-600 flex items-center font-medium">
+                              <Calendar className="w-3.5 h-3.5 mr-1 text-blue-400" />
+                              {project.completionYear}
+                            </p>
+                          )}
+                        </div>
+                        
                         {project.description && (
-                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{project.description}</p>
+                          <p className="text-sm text-gray-600 mt-auto line-clamp-3 leading-relaxed">{project.description}</p>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                  <p className="text-sm text-gray-400">No past projects showcased yet.</p>
+                <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                    <Briefcase className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-1">No past projects showcased yet</h3>
+                  <p className="text-sm text-gray-500 max-w-sm mb-6">Building trust starts here. Add your past work to show clients what you're capable of.</p>
+                  {isOwner && (
+                    <button 
+                      onClick={() => setIsProjectModalOpen(true)}
+                      className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl shadow-sm hover:translate-y-[-2px] hover:shadow-md transition-all flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Add Your First Project
+                    </button>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
           {/* Rate & Review Section */}
-          {!isOwner && (!!builderProfile || !!contractorProfile) && (
+          {!isOwner && (!!builderProfile || !!contractorProfile || !!workerProfile) && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-6 border-b pb-2">Rate & Review</h2>
               <form onSubmit={handleRateSubmit} className="space-y-4">
@@ -458,12 +592,17 @@ export default function ProfessionalProfile() {
               </form>
             </div>
           )}
-
-          <button className="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-orange-200 hover:bg-orange-700 hover:shadow-xl hover:-translate-y-1 transition-all active:scale-95">
-            Hire / Contact Professional
-          </button>
         </div>
       </div>
+
+      <AddProjectModal 
+        isOpen={isProjectModalOpen} 
+        onClose={() => setIsProjectModalOpen(false)} 
+        endpoint={role === 'builder' ? '/builders/projects' : role === 'worker' ? '/workers/projects' : '/contractors/projects'}
+        onSuccess={() => {
+            getProfessionalById(id);
+        }} 
+      />
     </div>
   );
 }

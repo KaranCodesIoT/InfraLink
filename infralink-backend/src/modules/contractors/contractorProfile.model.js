@@ -8,12 +8,28 @@ const ratingSchema = new mongoose.Schema({
 });
 
 const portfolioSchema = new mongoose.Schema({
-    title: { type: String, required: true, trim: true },
-    description: { type: String, trim: true },
-    location: { type: String, trim: true },
-    images: [{ type: String }],
-    completedAt: { type: Date }
-});
+    title: { type: String, required: true },
+    projectType: { type: String, enum: ['Residential', 'Commercial', 'Interior', 'Infrastructure', 'Renovation', 'Other'], default: 'Other' },
+    location: { type: String },
+    completionYear: { type: Number },
+    role: { type: String, enum: ['Builder', 'Contractor', 'Architect', 'Supervisor', 'Other'], default: 'Contractor' },
+    description: { type: String, required: true },
+    media: [{
+        url: { type: String, required: true },
+        caption: { type: String, required: true },
+        category: { type: String, enum: ['site_work', 'final_output', 'before_after', 'blueprint_document'], default: 'final_output' },
+        type: { type: String, enum: ['image', 'video', 'document'], default: 'image' },
+    }],
+    images: [{ type: String }], // Legacy support
+    legalDeclaration: {
+        contentOwnership: { type: Boolean, default: false },
+        genuineProject: { type: Boolean, default: false },
+        noCopyrightViolation: { type: Boolean, default: false },
+        acceptsConsequences: { type: Boolean, default: false },
+        declaredAt: { type: Date }
+    },
+    verificationStatus: { type: String, enum: ['self_declared', 'verified'], default: 'self_declared' },
+}, { timestamps: true });
 
 const contractorProfileSchema = new mongoose.Schema({
     user: {

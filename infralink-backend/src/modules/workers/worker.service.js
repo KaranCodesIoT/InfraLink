@@ -26,3 +26,37 @@ export const listWorkers = async (query) => {
     ]);
     return { workers, pagination: buildPaginationMeta(total, page, limit) };
 };
+
+export const addPortfolioProject = async (userId, projectData) => {
+    let profile = await WorkerProfile.findOne({ user: userId });
+    if (!profile) profile = await WorkerProfile.create({ user: userId });
+
+    if (!profile.portfolio) profile.portfolio = [];
+
+    if (projectData.legalDeclaration) {
+        projectData.legalDeclaration.declaredAt = new Date();
+    }
+
+    const project = {
+        ...projectData,
+        verificationStatus: 'self_declared',
+    };
+
+    profile.portfolio.push(project);
+    await profile.save();
+
+    return profile.portfolio[profile.portfolio.length - 1];
+};
+
+export const removePortfolioProject = async (userId, projectId) => {
+    const profile = await WorkerProfile.findOne({ user: userId });
+    if (!profile || !profile.portfolio) throw Object.assign(new Error('Worker profile not found'), { statusCode: 404 });
+
+    const projectIndex = profile.portfolio.findIndex(p => p._id.toString() === projectId);
+    if (projectIndex === -1) throw Object.assign(new Error('Project not found'), { statusCode: 404 });
+
+    profile.portfolio.splice(projectIndex, 1);
+    await profile.save();
+
+    return { message: 'Project removed successfully' };
+};

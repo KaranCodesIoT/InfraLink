@@ -25,8 +25,9 @@ const userSchema = new mongoose.Schema(
             city: String,
             state: String,
         },
-        followingBuilders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BuilderProfile' }],
-        followingContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ContractorProfile' }],
+        followersCount: { type: Number, default: 0 },
+        followingCount: { type: Number, default: 0 },
+        isPrivate: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

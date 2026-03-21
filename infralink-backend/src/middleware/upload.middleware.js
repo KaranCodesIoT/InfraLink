@@ -3,8 +3,12 @@ import path from 'path';
 import { sendError } from '../utils/response.utils.js';
 import { HTTP_STATUS } from '../constants/httpStatus.js';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_MIME_TYPES = [
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
+    'application/pdf', 
+    'video/mp4', 'video/webm'
+];
+const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 
 const storage = multer.memoryStorage();
 

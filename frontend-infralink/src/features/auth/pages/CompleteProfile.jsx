@@ -8,6 +8,7 @@ import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import { ROLE_LABELS } from '../../../constants/roles.js';
+import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
 
 export default function CompleteProfile() {
   const { user, updateProfile, uploadAvatar, isLoading } = useAuthStore();
@@ -36,7 +37,7 @@ export default function CompleteProfile() {
         experience: user.experience || '',
       });
       setSkills(user.skills || []);
-      setPhotoUrl(user.avatar || '');
+      setPhotoUrl(resolveAvatarUrl(user.avatar));
     }
   }, [user]);
 
@@ -86,8 +87,6 @@ export default function CompleteProfile() {
       setCropperSrc(null); // Close modal
       await uploadAvatar(user._id, croppedFile);
       toast.success('Avatar updated!');
-      // Update local photo preview immediately
-      setPhotoUrl(URL.createObjectURL(croppedFile));
     } catch {
       toast.error('Failed to upload avatar');
     }

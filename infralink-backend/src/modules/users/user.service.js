@@ -1,6 +1,23 @@
 import User from './user.model.js';
 import { getPagination, buildPaginationMeta } from '../../utils/pagination.utils.js';
 import { cloudinary } from '../../config/cloudinary.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PUBLIC_DIR = path.resolve(__dirname, '..', '..', '..', 'public', 'uploads', 'avatars');
+
+// Ensure upload dir exists
+if (!fs.existsSync(PUBLIC_DIR)) {
+    fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+}
+
+const isCloudinaryConfigured = () => {
+    const name = process.env.CLOUDINARY_CLOUD_NAME;
+    return name && name !== 'your_cloud_name' && name.length > 3;
+};
 
 export const getUserById = async (id) => {
     const user = await User.findById(id);
@@ -27,35 +44,55 @@ export const updateUser = async (id, data) => {
 };
 
 export const uploadAvatar = async (id, imageBuffer) => {
-    return new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-            { 
-                folder: 'infralink/avatars',
-                transformation: [{ width: 500, height: 500, crop: 'fill' }] 
-            },
-            async (error, result) => {
-                if (error) return reject(error);
-
-                try {
-                    const user = await User.findByIdAndUpdate(
-                        id,
-                        { avatar: result.secure_url },
-                        { new: true, runValidators: true }
-                    );
-                    if (!user) {
-                        const err = new Error('User not found');
-                        err.statusCode = 404;
-                        throw err;
+    if (isCloudinaryConfigured()) {
+        // Use Cloudinary
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                { 
+                    folder: 'infralink/avatars',
+                    transformation: [{ width: 500, height: 500, crop: 'fill' }] 
+                },
+                async (error, result) => {
+                    if (error) return reject(error);
+                    try {
+                        const user = await User.findByIdAndUpdate(
+                            id,
+                            { avatar: result.secure_url },
+                            { new: true, runValidators: true }
+                        );
+                        if (!user) {
+                            const err = new Error('User not found');
+                            err.statusCode = 404;
+                            throw err;
+                        }
+                        resolve(user);
+                    } catch (dbError) {
+                        reject(dbError);
                     }
-                    resolve(user);
-                } catch (dbError) {
-                    reject(dbError);
                 }
-            }
-        );
+            );
+            uploadStream.end(imageBuffer);
+        });
+    }
 
-        uploadStream.end(imageBuffer);
-    });
+    // Local disk fallback
+    const filename = `${id}_${Date.now()}.jpg`;
+    const filePath = path.join(PUBLIC_DIR, filename);
+    fs.writeFileSync(filePath, imageBuffer);
+
+    const port = process.env.PORT || 5000;
+    const avatarUrl = `http://localhost:${port}/uploads/avatars/${filename}`;
+    const user = await User.findByIdAndUpdate(
+        id,
+        { avatar: avatarUrl },
+        { new: true, runValidators: true }
+    );
+    if (!user) {
+        const err = new Error('User not found');
+        err.statusCode = 404;
+        throw err;
+    }
+    return user;
 };
 
 export const getAllUsers = async (query) => {

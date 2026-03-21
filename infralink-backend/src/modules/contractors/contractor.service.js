@@ -92,6 +92,47 @@ export const saveStep3 = async (userId, data) => {
     return profile;
 };
 
+export const addPortfolioProject = async (userId, projectData) => {
+    let profile = await ContractorProfile.findOne({ user: userId });
+    if (!profile) profile = await ContractorProfile.create({ user: userId });
+
+    if (!profile.professionalDetails) profile.professionalDetails = {};
+    if (!profile.professionalDetails.portfolio) profile.professionalDetails.portfolio = [];
+
+    // Ensure legal declaration has timestamp
+    if (projectData.legalDeclaration) {
+        projectData.legalDeclaration.declaredAt = new Date();
+    }
+
+    // Default to self_declared if not specified
+    const project = {
+        ...projectData,
+        verificationStatus: 'self_declared',
+    };
+
+    profile.professionalDetails.portfolio.push(project);
+    await profile.save();
+
+    return profile.professionalDetails.portfolio[profile.professionalDetails.portfolio.length - 1];
+};
+
+export const removePortfolioProject = async (userId, projectId) => {
+    const profile = await ContractorProfile.findOne({ user: userId });
+    if (!profile) throw Object.assign(new Error('Contractor profile not found'), { statusCode: 404 });
+
+    if (!profile.professionalDetails?.portfolio) throw Object.assign(new Error('Project not found'), { statusCode: 404 });
+
+    const projectIndex = profile.professionalDetails.portfolio.findIndex(
+        p => p._id.toString() === projectId
+    );
+    if (projectIndex === -1) throw Object.assign(new Error('Project not found'), { statusCode: 404 });
+
+    profile.professionalDetails.portfolio.splice(projectIndex, 1);
+    await profile.save();
+
+    return { message: 'Project removed successfully' };
+};
+
 export const verifyContractor = async (contractorProfileId) => {
     const profile = await ContractorProfile.findById(contractorProfileId);
     if (!profile) throw Object.assign(new Error('Contractor Profile not found'), { statusCode: 404 });

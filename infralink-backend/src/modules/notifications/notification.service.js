@@ -21,3 +21,14 @@ export const markAsRead = async (id, userId) => {
 export const markAllAsRead = async (userId) => {
     return Notification.updateMany({ user: userId, isRead: false }, { isRead: true, readAt: new Date() });
 };
+
+/**
+ * Create a notification (used by messaging & connections services).
+ */
+export const createNotification = async (userId, { title, body, type, metadata }) => {
+    return Notification.create({ user: userId, title, body, type, metadata });
+};
+
+export const getUnreadCount = async (userId) => {
+    return Notification.countDocuments({ user: userId, isRead: false });
+};

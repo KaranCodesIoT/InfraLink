@@ -28,6 +28,24 @@ export const submitStep3 = async (req, res, next) => {
     }
 };
 
+export const addProject = async (req, res, next) => {
+    try {
+        const result = await builderService.addPastProject(req.user._id, req.body);
+        return sendSuccess(res, result, 'Project added successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const removeProject = async (req, res, next) => {
+    try {
+        const result = await builderService.removePastProject(req.user._id, req.params.projectId);
+        return sendSuccess(res, result, 'Project removed successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const verifyBuilder = async (req, res, next) => {
     try {
         const result = await builderService.verifyBuilder(req.params.id);

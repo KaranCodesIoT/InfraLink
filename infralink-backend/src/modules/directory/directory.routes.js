@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as directoryCtrl from './directory.controller.js';
 import authMiddleware from '../../middleware/auth.middleware.js';
+import { verifyBlock } from '../network/middleware/block.middleware.js';
 
 const router = Router();
 
@@ -15,6 +16,6 @@ router.get('/stats', directoryCtrl.getDirectoryStats);
 
 
 // Get single professional profile by ID
-router.get('/professionals/:id', directoryCtrl.getProfessionalById);
+router.get('/professionals/:id', verifyBlock, directoryCtrl.getProfessionalById);
 
 export default router;

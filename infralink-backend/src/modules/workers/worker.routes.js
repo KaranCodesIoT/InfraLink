@@ -12,4 +12,7 @@ router.get('/', workerController.listWorkers);
 router.get('/me', requireRole('worker'), workerController.getMyProfile);
 router.patch('/me', requireRole('worker'), validate(workerProfileSchema), workerController.updateProfile);
 
+router.post('/projects', requireRole('worker'), workerController.addProject);
+router.delete('/projects/:projectId', requireRole('worker'), workerController.removeProject);
+
 export default router;

@@ -29,4 +29,25 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
+export const optionalAuth = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return next();
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = verifyAccessToken(token);
+
+        const user = await User.findById(decoded.id).select('-password');
+        if (user) {
+            req.user = user;
+        }
+        next();
+    } catch (error) {
+        // Silently fail auth for optional routes
+        next();
+    }
+};
+
 export default authMiddleware;

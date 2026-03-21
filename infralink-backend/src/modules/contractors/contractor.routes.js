@@ -30,6 +30,19 @@ router.post(
     contractorController.saveStep3
 );
 
+// ─── Portfolio Projects CRUD ───────────────────────────────────────────────────
+router.post(
+    '/projects',
+    authMiddleware,
+    contractorController.addProject
+);
+
+router.delete(
+    '/projects/:projectId',
+    authMiddleware,
+    contractorController.removeProject
+);
+
 // Admin: Verify / Reject Contractor
 router.put(
     '/admin/verify/:id',

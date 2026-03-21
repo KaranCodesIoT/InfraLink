@@ -41,9 +41,26 @@ const builderProfileSchema = new mongoose.Schema(
             pastProjects: [
                 {
                     title: { type: String, required: true },
-                    description: { type: String },
+                    projectType: { type: String, enum: ['Residential', 'Commercial', 'Interior', 'Infrastructure', 'Renovation', 'Other'], default: 'Other' },
                     location: { type: String },
-                    images: [{ type: String }] // Cloud URLs
+                    completionYear: { type: Number },
+                    role: { type: String, enum: ['Builder', 'Contractor', 'Architect', 'Supervisor', 'Other'], default: 'Builder' },
+                    description: { type: String, required: true },
+                    media: [{
+                        url: { type: String, required: true },
+                        caption: { type: String, required: true },
+                        category: { type: String, enum: ['site_work', 'final_output', 'before_after', 'blueprint_document'], default: 'final_output' },
+                        type: { type: String, enum: ['image', 'video', 'document'], default: 'image' },
+                    }],
+                    legalDeclaration: {
+                        contentOwnership: { type: Boolean, default: false },
+                        genuineProject: { type: Boolean, default: false },
+                        noCopyrightViolation: { type: Boolean, default: false },
+                        acceptsConsequences: { type: Boolean, default: false },
+                        declaredAt: { type: Date },
+                    },
+                    verificationStatus: { type: String, enum: ['self_declared', 'verified'], default: 'self_declared' },
+                    createdAt: { type: Date, default: Date.now },
                 }
             ]
         },

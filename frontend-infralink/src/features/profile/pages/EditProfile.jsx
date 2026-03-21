@@ -8,6 +8,7 @@ import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import { ROLES, ROLE_LABELS } from '../../../constants/roles.js';
+import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
 
 // Roles users can self-assign (exclude admin and unassigned)
 const SELECTABLE_ROLES = [
@@ -54,7 +55,7 @@ export default function EditProfile() {
         bio: user.bio || '',
       });
       setSkills(user.skills || []);
-      setPhotoUrl(user.avatar || '');
+      setPhotoUrl(resolveAvatarUrl(user.avatar));
     }
   }, [user]);
 
@@ -98,7 +99,6 @@ export default function EditProfile() {
       setCropperSrc(null);
       await uploadAvatar(user._id, croppedFile);
       toast.success('Profile photo updated successfully!');
-      setPhotoUrl(URL.createObjectURL(croppedFile));
     } catch {
       toast.error('Failed to upload photo');
     }

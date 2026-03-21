@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import swaggerUi from 'swagger-ui-express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import corsOptions from './config/cors.js';
 import swaggerSpec from './config/swagger.js';
@@ -17,6 +19,9 @@ import sanitizerMiddleware from './security/sanitizer.js';
 // Monitoring layer
 import { metricsMiddleware, metricsHandler } from './monitoring/metrics.js';
 import { sentryErrorHandler } from './monitoring/tracing.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Routes
 import authRoutes from './modules/auth/auth.routes.js';
@@ -39,6 +44,8 @@ import serviceRoutes from './modules/services/service.routes.js';
 import directoryRoutes from './modules/directory/directory.routes.js';
 import builderRoutes from './modules/builders/builder.routes.js';
 import contractorRoutes from './modules/contractors/contractor.routes.js';
+import networkRoutes from './modules/network/network.routes.js';
+import uploadRoutes from './modules/upload/upload.routes.js';
 
 const app = express();
 
@@ -51,6 +58,9 @@ app.use(sanitizerMiddleware);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(compression());
+
+// Serve static uploads (avatars, etc.)
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Logging
 app.use(loggerMiddleware);
@@ -91,6 +101,8 @@ app.use(`${V1}/ai`, aiRoutes);
 app.use(`${V1}/directory`, directoryRoutes);
 app.use(`${V1}/builders`, builderRoutes);
 app.use(`${V1}/contractors`, contractorRoutes);
+app.use(`${V1}/network`, networkRoutes);
+app.use(`${V1}/upload`, uploadRoutes);
 
 // Root Route (Welcome)
 app.get('/', (req, res) => {

@@ -11,6 +11,7 @@ import useAuth from '../hooks/useAuth.js';
 import useNotificationStore from '../store/notification.store.js';
 import useUIStore from '../store/ui.store.js';
 import { ROLES } from '../constants/roles.js';
+import { resolveAvatarUrl } from '../utils/avatarUrl.js';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD, roles: '*' },
@@ -124,8 +125,12 @@ export default function DashboardLayout() {
                 onClick={() => setUserMenuOpen((o) => !o)}
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white text-sm font-bold overflow-hidden shrink-0">
+                  {user?.avatar ? (
+                    <img src={resolveAvatarUrl(user?.avatar)} alt={user?.name} className="w-full h-full object-cover" />
+                  ) : (
+                    user?.name?.charAt(0).toUpperCase() || 'U'
+                  )}
                 </div>
                 <span className="hidden md:block text-sm font-medium text-gray-700">{user?.name}</span>
                 <ChevronDown className="w-4 h-4 text-gray-400" />

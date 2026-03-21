@@ -82,7 +82,6 @@ const useAuthStore = create((set, get) => ({
       await api.post(`/users/${userId}/avatar`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      // Refresh user state to get the new avatar URL
       const { data: me } = await api.get('/auth/me');
       set({ user: me.data, isLoading: false });
     } catch (e) {

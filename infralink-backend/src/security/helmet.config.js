@@ -19,6 +19,7 @@ const helmetOptions = {
         },
     },
     crossOriginEmbedderPolicy: false, // Required for Swagger UI
+    crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow frontend to load avatars cross-origin
     hsts: {
         maxAge: 31536000, // 1 year
         includeSubDomains: true,

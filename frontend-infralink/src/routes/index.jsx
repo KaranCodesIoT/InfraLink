@@ -28,6 +28,9 @@ import CompleteProfile from '../features/auth/pages/CompleteProfile.jsx';
 import BuilderOnboarding from '../features/builders/pages/BuilderOnboarding.jsx';
 import ContractorOnboarding from '../features/contractors/pages/ContractorOnboarding.jsx';
 import ContractorProfile from '../features/directory/pages/ContractorProfile.jsx';
+import Messages from '../features/messaging/pages/Messages.jsx';
+import NetworkHub from '../features/network/pages/NetworkHub.jsx';
+import PublicProfile from '../features/profile/pages/PublicProfile.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -57,8 +60,12 @@ const router = createBrowserRouter([
         children: [
           // Shared routes
           { path: ROUTES.PROFILE, element: <Profile /> },
+          { path: '/profile/:id', element: <PublicProfile /> },
           { path: ROUTES.PROFILE_EDIT, element: <EditProfile /> },
+          { path: '/network', element: <NetworkHub /> },
           { path: ROUTES.NOTIFICATIONS, element: <Notifications /> },
+          { path: ROUTES.MESSAGES, element: <Messages /> },
+          { path: ROUTES.MESSAGE_THREAD, element: <Messages /> },
           { path: ROUTES.JOBS, element: <JobBoard /> },
           { path: ROUTES.JOB_DETAIL, element: <JobDetail /> },
           { path: ROUTES.DIRECTORY, element: <WorkerDirectoryDashboard /> },

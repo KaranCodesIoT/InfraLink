@@ -21,7 +21,7 @@ export const register = async ({ name, email, password, role, phone, location })
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    return { user: { _id: user._id, name, email, role: user.role }, accessToken, refreshToken };
+    return { user: { _id: user._id, name, email, role: user.role, avatar: user.avatar }, accessToken, refreshToken };
 };
 
 export const login = async ({ email, password }) => {
@@ -41,7 +41,7 @@ export const login = async ({ email, password }) => {
     await user.save({ validateBeforeSave: false });
 
     return {
-        user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+        user: { _id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
         accessToken,
         refreshToken,
     };

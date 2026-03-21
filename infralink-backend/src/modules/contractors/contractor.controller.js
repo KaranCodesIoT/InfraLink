@@ -37,6 +37,27 @@ export const saveStep3 = async (req, res, next) => {
     }
 };
 
+export const addProject = async (req, res, next) => {
+    try {
+        console.log('[API] Hitting addProject for contractor. User ID:', req.user?._id);
+        const result = await contractorService.addPortfolioProject(req.user._id, req.body);
+        console.log('[API] Project added successfully!');
+        return sendSuccess(res, result, 'Project added successfully to your portfolio');
+    } catch (error) {
+        console.error('[API ERROR] addProject failed:', error.message);
+        next(error);
+    }
+};
+
+export const removeProject = async (req, res, next) => {
+    try {
+        const result = await contractorService.removePortfolioProject(req.user._id, req.params.projectId);
+        return sendSuccess(res, result, 'Project removed successfully from your portfolio');
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const verifyContractor = async (req, res, next) => {
     try {
         const profile = await contractorService.verifyContractor(req.params.id);

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore, useAuthStore } from '../../../store/index.js';
-import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Briefcase, ShieldCheck, PenTool, Pencil, Clock, DollarSign } from 'lucide-react';
-
+import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Briefcase, ShieldCheck, PenTool, Pencil, Clock, DollarSign, MessageCircle } from 'lucide-react';
+import FollowButton from '../../network/components/FollowButton.jsx';
+import BlockButton from '../../network/components/BlockButton.jsx';
+import useNetworkStore from '../../../store/network.store.js';
 export default function ContractorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,8 +12,6 @@ export default function ContractorProfile() {
     selectedProfessional, 
     getProfessionalById, 
     clearSelectedProfessional, 
-    followContractor, 
-    unfollowContractor, 
     rateContractor 
   } = useDirectoryStore();
   
@@ -20,15 +20,15 @@ export default function ContractorProfile() {
   const { user: currentUser } = useAuthStore();
   const { toast } = useUIStore();
 
-  const [followLoading, setFollowLoading] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [ratingLoading, setRatingLoading] = useState(false);
+  const [canMessage, setCanMessage] = useState(false);
+  const prevFollowStatusRef = useRef(null);
 
   useEffect(() => {
     getProfessionalById(id)
-      .then(data => console.log('[ContractorProfile] API Response:', data))
       .catch((err) => {
         console.error('[ContractorProfile] Error:', err);
         toast.error('Failed to load contractor profile');
@@ -38,26 +38,6 @@ export default function ContractorProfile() {
 
   const isOwner = !!(currentUser?._id && selectedProfessional?._id && 
     currentUser._id.toString() === selectedProfessional._id.toString());
-
-  const handleFollowToggle = async () => {
-    if (!currentUser) return toast.error('Please log in to follow contractors');
-    const contractorProfileId = selectedProfessional?.contractorProfile?._id || selectedProfessional?._id;
-    
-    setFollowLoading(true);
-    try {
-      if (selectedProfessional.isFollowing) {
-        await unfollowContractor(contractorProfileId);
-        toast.success(`Unfollowed ${selectedProfessional.name}`);
-      } else {
-        await followContractor(contractorProfileId);
-        toast.success(`Following ${selectedProfessional.name}`);
-      }
-    } catch (err) {
-      // handled by store
-    } finally {
-      setFollowLoading(false);
-    }
-  };
 
   const handleRateSubmit = async (e) => {
     e.preventDefault();
@@ -128,31 +108,12 @@ export default function ContractorProfile() {
                       <Pencil className="w-3 h-3 mr-1" /> Edit Info
                     </button>
                   )}
-                  {!isOwner && (
-                    <button
-                      onClick={handleFollowToggle}
-                      disabled={followLoading}
-                      className={`flex items-center justify-center py-1.5 px-4 rounded-lg text-sm font-bold transition-all ${
-                        selectedProfessional.isFollowing 
-                          ? 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-100'
-                      } disabled:opacity-70`}
-                    >
-                      {followLoading && <Loader2 className="w-3 h-3 mr-2 animate-spin" />}
-                      {selectedProfessional.isFollowing ? 'Unfollow' : 'Follow'}
-                    </button>
-                  )}
                 </div>
-                
                 <p className="text-indigo-600 font-semibold capitalize text-xs bg-indigo-50 inline-block px-3 py-1 rounded-full mb-4">
                   {profDetails.skillLevel || 'Professional'} Contractor
                 </p>
 
                 <div className="flex items-center justify-center gap-6 py-4 border-y border-gray-50 mb-6">
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900">{selectedProfessional.followersCount || 0}</p>
-                    <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Followers</p>
-                  </div>
                   <div className="text-center">
                     <p className="text-lg font-bold text-gray-900 flex items-center justify-center">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
@@ -165,6 +126,62 @@ export default function ContractorProfile() {
                     <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Reviews</p>
                   </div>
                 </div>
+
+                {/* Follow / Block / Message Actions */}
+                {!isOwner && selectedProfessional?._id && (
+                  <div className="w-full space-y-2 pt-2">
+                    <div className="flex gap-2 justify-center">
+                      <FollowButton
+                        targetId={selectedProfessional._id}
+                        onStatusChange={(s, data) => {
+                          if (data) {
+                            const hasFollow = (s === 'accepted' || s === 'following' || data.is_following_back);
+                            setCanMessage(hasFollow);
+                          } else {
+                            setCanMessage(false);
+                          }
+                          // Instant optimistic UI update
+                          const prevStatus = prevFollowStatusRef.current;
+                          if (prevStatus === 'not_following' && (s === 'accepted' || s === 'following')) {
+                            useDirectoryStore.setState(state => ({
+                              selectedProfessional: state.selectedProfessional ? { 
+                                ...state.selectedProfessional, 
+                                followersCount: (state.selectedProfessional.followersCount || 0) + 1 
+                              } : null
+                            }));
+                          } else if ((prevStatus === 'accepted' || prevStatus === 'following') && s === 'not_following') {
+                            useDirectoryStore.setState(state => ({
+                              selectedProfessional: state.selectedProfessional ? { 
+                                ...state.selectedProfessional, 
+                                followersCount: Math.max(0, (state.selectedProfessional.followersCount || 0) - 1) 
+                              } : null
+                            }));
+                          }
+                          if (s !== 'loading' && s !== 'pending') {
+                            prevFollowStatusRef.current = s;
+                          }
+                        }}
+                      />
+                      <BlockButton targetId={selectedProfessional._id} />
+                    </div>
+                    {canMessage ? (
+                      <button
+                        onClick={() => navigate(`/messages/${selectedProfessional._id}`)}
+                        className="w-full border border-blue-200 bg-blue-50 text-blue-700 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="w-4 h-4" /> Message
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full border border-gray-200 bg-gray-50 text-gray-400 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                        title="Follow this user to send messages"
+                      >
+                        <MessageCircle className="w-4 h-4" /> Message
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -325,6 +342,7 @@ export default function ContractorProfile() {
               </form>
             </div>
           )}
+
         </div>
       </div>
     </div>

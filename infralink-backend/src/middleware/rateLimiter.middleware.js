@@ -5,7 +5,7 @@ import { ERROR_CODES } from '../constants/errorCodes.js';
 
 export const defaultLimiter = rateLimit({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
-    max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,
+    max: parseInt(process.env.RATE_LIMIT_MAX, 10) || (process.env.NODE_ENV === 'production' ? 100 : 50000),
     standardHeaders: true,
     legacyHeaders: false,
     handler: (_req, res) =>
@@ -14,8 +14,9 @@ export const defaultLimiter = rateLimit({
 
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 10,
+    max: process.env.NODE_ENV === 'production' ? 10 : 10000,
     standardHeaders: true,
     legacyHeaders: false,
-    message: 'Too many auth attempts. Try again in 15 minutes.',
+    handler: (_req, res) =>
+        sendError(res, 'Too many auth attempts. Try again in 15 minutes.', HTTP_STATUS.TOO_MANY_REQUESTS, ERROR_CODES.RATE_LIMIT_EXCEEDED),
 });

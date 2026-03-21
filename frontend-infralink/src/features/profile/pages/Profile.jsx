@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import useAuthStore from '../../../store/auth.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import { ROLE_LABELS } from '../../../constants/roles.js';
+import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
 
 export default function Profile() {
   const { user } = useAuthStore();
@@ -24,7 +25,7 @@ export default function Profile() {
           <div className="flex justify-between items-end -mt-12 mb-6">
             <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-sm overflow-hidden flex items-center justify-center">
               {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                <img src={resolveAvatarUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-orange-100 flex items-center justify-center">
                   <User className="w-10 h-10 text-orange-600" />
@@ -62,6 +63,31 @@ export default function Profile() {
                 </span>
               )}
             </div>
+
+            <div className="flex items-center gap-4 mt-3">
+              <Link to="/network" className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                 {user.followersCount || 0} <span className="text-gray-500">Followers</span>
+              </Link>
+              <Link to="/network?tab=following" className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                 {user.followingCount || 0} <span className="text-gray-500">Following</span>
+              </Link>
+              <div className="ml-4 flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-500">Privacy:</span>
+                <button
+                  onClick={async () => {
+                    const { networkService } = await import('../../network/api/network.service.js');
+                    if (window.confirm(`Switch to ${user.isPrivate ? 'Public' : 'Private'}? ${user.isPrivate ? '(All pending requests will be auto-accepted)' : ''}`)) {
+                       await networkService.togglePrivacy(!user.isPrivate);
+                       window.location.reload(); // Simple state sync strategy
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${user.isPrivate ? 'bg-gray-800 text-white' : 'bg-green-100 text-green-800'}`}
+                >
+                  {user.isPrivate ? 'Private' : 'Public'}
+                </button>
+              </div>
+            </div>
+
             {user.bio && (
               <p className="text-sm text-gray-600 mt-3 max-w-2xl leading-relaxed">{user.bio}</p>
             )}

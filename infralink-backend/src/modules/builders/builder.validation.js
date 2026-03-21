@@ -15,16 +15,34 @@ export const step2Validation = Joi.object({
     reraRegistrationNumber: Joi.string().trim().allow('', null)
 });
 
+const pastProjectSchema = Joi.object({
+    title: Joi.string().trim().required(),
+    projectType: Joi.string().valid('Residential', 'Commercial', 'Interior', 'Infrastructure', 'Renovation', 'Other').default('Other'),
+    location: Joi.string().trim().allow('', null),
+    completionYear: Joi.number().integer().min(1900).max(new Date().getFullYear()).allow(null),
+    role: Joi.string().valid('Builder', 'Contractor', 'Architect', 'Supervisor', 'Other').default('Builder'),
+    description: Joi.string().trim().required(),
+    media: Joi.array().items(
+        Joi.object({
+            url: Joi.string().uri().required(),
+            caption: Joi.string().trim().required(),
+            category: Joi.string().valid('site_work', 'final_output', 'before_after', 'blueprint_document').default('final_output'),
+            type: Joi.string().valid('image', 'video', 'document').default('image'),
+        })
+    ).max(20).default([]),
+    legalDeclaration: Joi.object({
+        contentOwnership: Joi.boolean().valid(true).required(),
+        genuineProject: Joi.boolean().valid(true).required(),
+        noCopyrightViolation: Joi.boolean().valid(true).required(),
+        acceptsConsequences: Joi.boolean().valid(true).required(),
+    }).required(),
+});
+
 export const step3Validation = Joi.object({
     servicesOffered: Joi.array().items(Joi.string().trim()).min(1).required(),
     pricingModel: Joi.string().valid('per sq ft', 'hourly', 'fixed').required(),
     teamSize: Joi.number().min(1).required(),
-    pastProjects: Joi.array().items(
-        Joi.object({
-            title: Joi.string().trim().required(),
-            description: Joi.string().trim().allow('', null),
-            location: Joi.string().trim().allow('', null),
-            images: Joi.array().items(Joi.string().uri()).max(10).default([])
-        })
-    ).default([])
+    pastProjects: Joi.array().items(pastProjectSchema).default([])
 });
+
+export const addProjectValidation = pastProjectSchema;

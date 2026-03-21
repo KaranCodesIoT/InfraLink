@@ -1,6 +1,6 @@
 import express from 'express';
 import * as builderController from './builder.controller.js';
-import { step1Validation, step2Validation, step3Validation } from './builder.validation.js';
+import { step1Validation, step2Validation, step3Validation, addProjectValidation } from './builder.validation.js';
 import authMiddleware from '../../middleware/auth.middleware.js';
 import validate from '../../middleware/validate.middleware.js';
 import { uploadFields } from '../../middleware/upload.middleware.js';
@@ -36,6 +36,20 @@ router.post(
     authMiddleware,
     validate(step3Validation),
     builderController.submitStep3
+);
+
+// ─── Past Projects CRUD ───────────────────────────────────────────────────────
+router.post(
+    '/projects',
+    authMiddleware,
+    validate(addProjectValidation),
+    builderController.addProject
+);
+
+router.delete(
+    '/projects/:projectId',
+    authMiddleware,
+    builderController.removeProject
 );
 
 // Admin: Verify Builder

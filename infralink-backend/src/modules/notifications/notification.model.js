@@ -7,7 +7,21 @@ const notificationSchema = new mongoose.Schema(
         body: { type: String },
         type: {
             type: String,
-            enum: ['job_match', 'application_update', 'message', 'payment', 'review', 'system'],
+            enum: [
+                'job_match',
+                'application_update',
+                'message',
+                'payment',
+                'review',
+                'system',
+                // Messaging & Connection types
+                'message_request',
+                'request_accepted',
+                'request_rejected',
+                'new_message',
+                'follow_request',
+                'follow_accepted',
+            ],
             default: 'system',
         },
         metadata: { type: mongoose.Schema.Types.Mixed },
