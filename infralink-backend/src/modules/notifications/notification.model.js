@@ -21,6 +21,7 @@ const notificationSchema = new mongoose.Schema(
                 'new_message',
                 'follow_request',
                 'follow_accepted',
+                'new_application',
             ],
             default: 'system',
         },

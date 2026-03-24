@@ -26,8 +26,10 @@ router.post('/follows/requests/bulk/reject', networkController.bulkRejectAll);
 // Block + privacy guards enforced at service level (getFollowers / getFollowing)
 router.get('/follows/requests/incoming', networkController.getIncomingRequestsList);
 router.get('/follows/requests/outgoing', networkController.getOutgoingRequestsList);
-router.get('/follows/followers/:targetId?', networkController.getFollowersList);
-router.get('/follows/following/:targetId?', networkController.getFollowingList);
+router.get('/follows/followers', networkController.getFollowersList);
+router.get('/follows/followers/:targetId', networkController.getFollowersList);
+router.get('/follows/following', networkController.getFollowingList);
+router.get('/follows/following/:targetId', networkController.getFollowingList);
 
 // ---- BLOCKING ROUTES ----
 router.post('/blocks/:targetId', validateObjectId('targetId'), networkController.blockUser);

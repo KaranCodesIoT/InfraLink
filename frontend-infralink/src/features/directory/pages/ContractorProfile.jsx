@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore, useAuthStore } from '../../../store/index.js';
-import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Briefcase, ShieldCheck, PenTool, Pencil, Clock, DollarSign, MessageCircle } from 'lucide-react';
+import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Briefcase, ShieldCheck, PenTool, Pencil, Clock, DollarSign, MessageCircle, Users, CheckCircle2, RefreshCw } from 'lucide-react';
 import FollowButton from '../../network/components/FollowButton.jsx';
 import BlockButton from '../../network/components/BlockButton.jsx';
 import useNetworkStore from '../../../store/network.store.js';
@@ -104,16 +104,16 @@ export default function ContractorProfile() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-1">
                   <h1 className="text-2xl font-bold text-gray-900">{displayName}</h1>
                   {isOwner && (
-                    <button onClick={() => navigate('/contractor-onboarding?step=1')} className="text-orange-600 hover:text-orange-800 flex items-center text-xs font-medium transition-colors">
+                    <button onClick={() => navigate('/contractor-onboarding?step=1&mode=edit_info')} className="text-orange-600 hover:text-orange-800 flex items-center text-xs font-medium transition-colors">
                       <Pencil className="w-3 h-3 mr-1" /> Edit Info
                     </button>
                   )}
                 </div>
                 <p className="text-indigo-600 font-semibold capitalize text-xs bg-indigo-50 inline-block px-3 py-1 rounded-full mb-4">
-                  {profDetails.skillLevel || 'Professional'} Contractor
+                  {selectedProfessional.contractorType || `${profDetails.skillLevel || 'Professional'} Contractor`}
                 </p>
 
-                <div className="flex items-center justify-center gap-6 py-4 border-y border-gray-50 mb-6">
+                <div className="flex items-center justify-center gap-4 py-4 border-y border-gray-50 mb-6 flex-wrap">
                   <div className="text-center">
                     <p className="text-lg font-bold text-gray-900 flex items-center justify-center">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
@@ -124,6 +124,17 @@ export default function ContractorProfile() {
                   <div className="text-center">
                     <p className="text-lg font-bold text-gray-900">{selectedProfessional.totalReviews || 0}</p>
                     <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Reviews</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-blue-500 mr-1" />
+                      {selectedProfessional.followersCount || 0}
+                    </p>
+                    <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Followers</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900">{selectedProfessional.followingCount || 0}</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">Following</p>
                   </div>
                 </div>
 
@@ -201,7 +212,7 @@ export default function ContractorProfile() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Verification</h3>
               {isOwner && (
-                <button onClick={() => navigate('/contractor-onboarding?step=2')} className="text-orange-600 hover:text-orange-800 flex items-center text-xs font-medium transition-colors">
+                <button onClick={() => navigate('/contractor-onboarding?step=2&mode=edit_kyc')} className="text-orange-600 hover:text-orange-800 flex items-center text-xs font-medium transition-colors">
                   <Pencil className="w-3 h-3 mr-1" /> Edit KYC
                 </button>
               )}
@@ -238,14 +249,9 @@ export default function ContractorProfile() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <div className="flex justify-between items-center mb-6 border-b pb-2">
               <h2 className="text-lg font-bold text-gray-900">Professional Profile</h2>
-              {isOwner && (
-                <button onClick={() => navigate('/contractor-onboarding?step=3')} className="text-orange-600 hover:text-orange-800 flex items-center text-sm font-medium transition-colors">
-                  <Pencil className="w-4 h-4 mr-1" /> Edit
-                </button>
-              )}
             </div>
             
-            <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
               <div className="flex items-start space-x-3">
                 <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                    <Clock className="w-5 h-5" />
@@ -258,13 +264,21 @@ export default function ContractorProfile() {
               
               <div className="flex items-start space-x-3">
                 <div className="p-2 bg-green-50 rounded-lg text-green-600">
-                   <DollarSign className="w-5 h-5" />
+                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                   <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Pricing</p>
-                   <p className="text-gray-900 font-medium capitalize">
-                     {profDetails.pricing?.amount ? `${profDetails.pricing.amount} / ${profDetails.pricing.type}` : 'Negotiable'}
-                   </p>
+                   <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Completed</p>
+                   <p className="text-gray-900 font-medium">{contractorProfile?.completedProjects || 0}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
+                   <RefreshCw className="w-5 h-5" />
+                </div>
+                <div>
+                   <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Ongoing</p>
+                   <p className="text-gray-900 font-medium">{contractorProfile?.ongoingProjects || 0}</p>
                 </div>
               </div>
             </div>
@@ -281,18 +295,6 @@ export default function ContractorProfile() {
                 </div>
               </div>
 
-              {profDetails.tools?.length > 0 && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Tools & Equipment</p>
-                  <div className="flex flex-wrap gap-2">
-                    {profDetails.tools.map((t, i) => (
-                      <span key={i} className="bg-gray-50 text-gray-600 px-3 py-1.5 rounded-lg text-sm border border-gray-100 flex items-center">
-                        <PenTool className="w-3 h-3 mr-2" /> {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

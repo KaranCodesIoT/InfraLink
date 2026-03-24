@@ -31,6 +31,8 @@ import ContractorProfile from '../features/directory/pages/ContractorProfile.jsx
 import Messages from '../features/messaging/pages/Messages.jsx';
 import NetworkHub from '../features/network/pages/NetworkHub.jsx';
 import PublicProfile from '../features/profile/pages/PublicProfile.jsx';
+import MyJobs from '../features/jobs/pages/MyJobs.jsx';
+import MyApplications from '../features/jobs/pages/MyApplications.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -68,18 +70,15 @@ const router = createBrowserRouter([
           { path: ROUTES.MESSAGE_THREAD, element: <Messages /> },
           { path: ROUTES.JOBS, element: <JobBoard /> },
           { path: ROUTES.JOB_DETAIL, element: <JobDetail /> },
+          { path: ROUTES.JOB_POST, element: <PostJob /> },
+          { path: ROUTES.MY_JOBS, element: <MyJobs /> },
+          { path: ROUTES.MY_APPLICATIONS, element: <MyApplications /> },
           { path: ROUTES.DIRECTORY, element: <WorkerDirectoryDashboard /> },
           { path: '/directory/browse', element: <ProfessionalDirectory /> },
           { path: ROUTES.DIRECTORY_DETAIL, element: <ProfessionalProfile /> },
           { path: '/directory/contractor/:id', element: <ContractorProfile /> },
 
-          {
-            element: <RoleRoute roles={[ROLES.CLIENT, ROLES.BUILDER, ROLES.NORMAL_USER, ROLES.CONTRACTOR]} />,
-            children: [
-              { path: ROUTES.JOB_POST, element: <PostJob /> },
-            ]
-          },
-          
+
           // Role specific routes
           ...clientRoutes,
           ...workerRoutes,

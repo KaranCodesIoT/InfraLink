@@ -46,6 +46,8 @@ const contractorProfileSchema = new mongoose.Schema({
     address: { type: String, trim: true },
     serviceAreas: [{ type: String, trim: true }],
     experience: { type: Number, min: 0 },
+    completedProjects: { type: Number, default: 0 },
+    ongoingProjects: { type: Number, default: 0 },
 
     // KYC
     kycDetails: {
@@ -72,11 +74,6 @@ const contractorProfileSchema = new mongoose.Schema({
             type: String,
             enum: ['beginner', 'intermediate', 'expert']
         },
-        pricing: {
-            type: { type: String, enum: ['hourly', 'daily', 'fixed'] },
-            amount: { type: Number, min: 0 }
-        },
-        tools: [{ type: String, trim: true }],
         portfolio: [portfolioSchema]
     },
 

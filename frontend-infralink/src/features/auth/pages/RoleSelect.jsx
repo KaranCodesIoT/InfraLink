@@ -4,6 +4,7 @@ import { Building2, Hammer, HardHat, Briefcase, HardDriveUpload, Wrench, Package
 import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
+import { CONTRACTOR_TYPES } from '../../../constants/contractorTypes.js';
 import api from '../../../lib/axios.js';
 
 // Individual role — goes straight to dashboard, no profile form
@@ -73,6 +74,7 @@ export default function RoleSelect() {
   const { toast } = useUIStore();
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState(null);
+  const [contractorType, setContractorType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContinue = async () => {
@@ -81,9 +83,19 @@ export default function RoleSelect() {
       return;
     }
 
+    if (selectedRole === 'contractor' && !contractorType) {
+      toast.error('Please select a Contractor Type');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await api.patch(`/users/${user._id}`, { role: selectedRole });
+      const payload = { role: selectedRole };
+      if (selectedRole === 'contractor') {
+        payload.contractorType = contractorType;
+      }
+
+      await api.patch(`/users/${user._id}`, payload);
       await initAuth();
 
       if (selectedRole === INDIVIDUAL_ROLE) {
@@ -168,6 +180,26 @@ export default function RoleSelect() {
             </div>
           )}
 
+          {/* Contractor Type Dropdown */}
+          {selectedRole === 'contractor' && (
+            <div className="mt-5 p-5 bg-green-50 border border-green-200 rounded-xl animate-fade-in">
+              <label className="block text-sm font-bold text-green-900 mb-2">
+                Select your Contractor Type *
+              </label>
+              <select
+                value={contractorType}
+                onChange={(e) => setContractorType(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-green-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow appearance-none cursor-pointer"
+              >
+                <option value="" disabled>Select a specialty...</option>
+                {CONTRACTOR_TYPES.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-green-700">This helps clients find you based on your specific expertise.</p>
+            </div>
+          )}
+
           <div className="mt-6 flex items-center justify-between">
             <button
               onClick={() => navigate(ROUTES.DASHBOARD)}
@@ -177,7 +209,7 @@ export default function RoleSelect() {
             </button>
             <button
               onClick={handleContinue}
-              disabled={isSubmitting || !selectedRole}
+              disabled={isSubmitting || !selectedRole || (selectedRole === 'contractor' && !contractorType)}
               className="bg-orange-600 text-white px-8 py-3 rounded-xl text-sm font-medium hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting

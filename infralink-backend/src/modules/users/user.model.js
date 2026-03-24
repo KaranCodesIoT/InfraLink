@@ -1,6 +1,24 @@
 import mongoose from 'mongoose';
 import { ROLES } from '../../constants/roles.js';
 
+export const CONTRACTOR_TYPES = [
+    'General Contractor (Full Project)',
+    'Interior Contractor',
+    'Civil Contractor',
+    'Electrical Contractor',
+    'Plumbing Contractor',
+    'Carpentry Contractor',
+    'Painting Contractor',
+    'Flooring Contractor',
+    'HVAC Contractor (AC/Ventilation)',
+    'Fabrication / Welding Contractor',
+    'Modular Kitchen Contractor',
+    'False Ceiling Contractor',
+    'Tiles & Marble Contractor',
+    'Waterproofing Contractor',
+    'Demolition Contractor'
+];
+
 const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
@@ -8,6 +26,14 @@ const userSchema = new mongoose.Schema(
         password: { type: String, required: true, select: false },
         role: { type: String, enum: Object.values(ROLES), default: 'unassigned' },
         phone: { type: String, trim: true },
+        contractorType: {
+            type: String,
+            enum: CONTRACTOR_TYPES,
+            trim: true,
+            required: function () {
+                return this.role === 'contractor';
+            }
+        },
         avatar: { type: String },
         isVerified: { type: Boolean, default: false },
         isActive: { type: Boolean, default: true },

@@ -13,6 +13,13 @@ export const listApplicationsForJob = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const getMyApplications = async (req, res, next) => {
+    try {
+        const { applications, pagination } = await appService.getMyApplications(req.user._id, req.query);
+        sendPaginatedSuccess(res, applications, pagination);
+    } catch (e) { next(e); }
+};
+
 export const updateApplicationStatus = async (req, res, next) => {
     try { sendSuccess(res, await appService.updateApplicationStatus(req.params.id, req.body), 'Application updated'); }
     catch (e) { next(e); }

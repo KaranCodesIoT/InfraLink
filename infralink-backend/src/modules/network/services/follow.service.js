@@ -5,14 +5,21 @@ import { checkBlockExists } from './block.service.js';
 import { HTTP_STATUS } from '../../../constants/httpStatus.js';
 
 const ALLOWED_TARGETS = {
+  // Workers can follow other workers
   'labour': ['builder', 'contractor', 'developer', 'architect', 'supplier', 'labour'],
   'contractor': ['builder', 'developer', 'architect', 'supplier', 'labour', 'contractor'],
   'architect': ['builder', 'developer', 'contractor', 'labour', 'architect'],
   'supplier': ['builder', 'contractor', 'developer', 'labour', 'supplier'],
   'inspector': ['builder', 'architect', 'developer', 'labour', 'inspector'],
-  'client': ['builder', 'architect', 'contractor', 'developer', 'labour', 'client'],
-  'builder': ['*'],
-  'developer': ['*'],
+  'worker': ['builder', 'contractor', 'developer', 'architect', 'supplier', 'labour', 'worker'],
+  
+  // Clients/Homeowners can follow workers/professionals
+  'client': ['builder', 'architect', 'contractor', 'developer', 'labour', 'supplier', 'worker'],
+  'normal_user': ['builder', 'architect', 'contractor', 'developer', 'labour', 'supplier', 'worker'],
+  
+  // High-level roles
+  'builder': ['contractor', 'architect', 'supplier', 'labour', 'worker', 'developer', 'builder'],
+  'developer': ['contractor', 'architect', 'supplier', 'labour', 'worker', 'builder', 'developer'],
   'admin': ['*']
 };
 
@@ -20,12 +27,16 @@ const _validateRoleConstraint = (followerRole, targetRole) => {
     const follower = followerRole.toLowerCase();
     const target = targetRole.toLowerCase();
     
-    if (follower === 'admin' || follower === 'developer' || follower === 'builder') return true;
+    // NO ONE can follow a client or normal_user (Homeowner)
+    if (target === 'client' || target === 'normal_user') {
+        return false;
+    }
     
-    const allowed = ALLOWED_TARGETS[follower];
-    if (!allowed) return false;
+    if (follower === 'admin') return true;
     
+    const allowed = ALLOWED_TARGETS[follower] || [];
     if (allowed.includes('*') || allowed.includes(target)) return true;
+    
     return false;
 };
 

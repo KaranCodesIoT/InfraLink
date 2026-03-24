@@ -49,7 +49,7 @@ export default function Profile() {
                 </span>
               ) : (
                 <span className="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full border border-orange-200">
-                  {roleLabel}
+                  {roleLabel}{user.contractorType ? ` - ${user.contractorType}` : ''}
                 </span>
               )}
               {locationStr && (

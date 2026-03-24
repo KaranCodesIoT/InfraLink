@@ -1,10 +1,12 @@
 import Joi from 'joi';
 import { ROLES } from '../../constants/roles.js';
+import { CONTRACTOR_TYPES } from './user.model.js';
 
 export const updateUserSchema = Joi.object({
     name: Joi.string().min(2).max(100),
     phone: Joi.string(),
     role: Joi.string().valid(...Object.values(ROLES).filter(r => r !== 'unassigned')),
+    contractorType: Joi.string().valid(...CONTRACTOR_TYPES).allow('', null),
     skills: Joi.array().items(Joi.string().trim()),
     experience: Joi.string().allow(''),
     bio: Joi.string().allow(''),

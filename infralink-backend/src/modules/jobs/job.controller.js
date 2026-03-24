@@ -18,6 +18,13 @@ export const listJobs = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const getMyJobs = async (req, res, next) => {
+    try {
+        const { jobs, pagination } = await jobService.getMyJobs(req.user._id, req.query);
+        sendPaginatedSuccess(res, jobs, pagination);
+    } catch (e) { next(e); }
+};
+
 export const updateJob = async (req, res, next) => {
     try { sendSuccess(res, await jobService.updateJob(req.params.id, req.user._id, req.body), 'Job updated'); }
     catch (e) { next(e); }

@@ -81,8 +81,6 @@ export const saveStep3 = async (userId, data) => {
     profile.professionalDetails = {
         services: data.services,
         skillLevel: data.skillLevel,
-        pricing: data.pricing,
-        tools: data.tools,
         portfolio: data.portfolio || []
     };
 

@@ -7,6 +7,7 @@ import { Loader2, Check, ArrowRight, ArrowLeft, Upload, PenTool, User, ShieldChe
 export default function ContractorOnboarding() {
   const [searchParams] = useSearchParams();
   const initialStep = parseInt(searchParams.get('step')) || 1;
+  const mode = searchParams.get('mode'); // 'edit_info' or 'edit_kyc'
   const [step, setStep] = useState(initialStep);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useUIStore();
@@ -35,10 +36,7 @@ export default function ContractorOnboarding() {
 
   const [step3Data, setStep3Data] = useState({
     services: '',
-    skillLevel: 'intermediate',
-    pricingType: 'hourly',
-    amount: '',
-    tools: ''
+    skillLevel: 'intermediate'
   });
 
   useEffect(() => {
@@ -66,10 +64,7 @@ export default function ContractorOnboarding() {
               const pd = cp.professionalDetails;
               setStep3Data({
                 services: pd.services?.join(', ') || '',
-                skillLevel: pd.skillLevel || 'intermediate',
-                pricingType: pd.pricing?.type || 'hourly',
-                amount: pd.pricing?.amount || '',
-                tools: pd.tools?.join(', ') || ''
+                skillLevel: pd.skillLevel || 'intermediate'
               });
             }
           }
@@ -90,8 +85,12 @@ export default function ContractorOnboarding() {
         serviceAreas: step1Data.serviceAreas.split(',').map(s => s.trim())
       };
       await api.post('/contractors/onboarding/step1', payload);
-      setStep(2);
       toast.success('Basic info saved!');
+      if (mode === 'edit_info') {
+        setStep(3);
+      } else {
+        setStep(2);
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Step 1 failed');
     } finally { setIsLoading(false); }
@@ -110,8 +109,12 @@ export default function ContractorOnboarding() {
       await api.post('/contractors/onboarding/step2', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setStep(3);
       toast.success('KYC submitted!');
+      if (mode === 'edit_kyc') {
+        navigate(-1);
+      } else {
+        setStep(3);
+      }
     } catch (err) {
       const errData = err.response?.data;
       console.error('[Step2 KYC Error]:', errData || err.message);
@@ -126,13 +129,11 @@ export default function ContractorOnboarding() {
     try {
       const payload = {
         services: step3Data.services.split(',').map(s => s.trim()),
-        skillLevel: step3Data.skillLevel,
-        pricing: { type: step3Data.pricingType, amount: Number(step3Data.amount) },
-        tools: step3Data.tools.split(',').map(s => s.trim())
+        skillLevel: step3Data.skillLevel
       };
       await api.post('/contractors/onboarding/step3', payload);
-      toast.success('Onboarding completed!');
-      navigate('/directory');
+      toast.success(mode === 'edit_info' ? 'Profile updated!' : 'Onboarding completed!');
+      navigate(mode ? -1 : '/directory');
     } catch (err) {
       toast.error('Step 3 failed');
     } finally { setIsLoading(false); }
@@ -145,18 +146,33 @@ export default function ContractorOnboarding() {
         <p className="text-gray-500">Complete these steps to start getting hired on InfraLink.</p>
         
         {/* Progress Bar */}
-        <div className="mt-8 flex items-center justify-between">
-            {[1, 2, 3].map((s) => (
-                <div key={s} className="flex items-center flex-1 last:flex-none">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition-all ${
-                        step >= s ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-200 text-gray-400 bg-white'
-                    }`}>
-                        {step > s ? <Check className="w-5 h-5" /> : s}
-                    </div>
-                    {s < 3 && <div className={`h-1 flex-1 mx-4 rounded-full ${step > s ? 'bg-indigo-600' : 'bg-gray-100'}`} />}
-                </div>
-            ))}
-        </div>
+        {mode === 'edit_kyc' ? null : mode === 'edit_info' ? (
+          <div className="mt-8 flex items-center justify-between max-w-sm mx-auto">
+              {[1, 3].map((s, idx) => (
+                  <div key={s} className="flex items-center flex-1 last:flex-none">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition-all ${
+                          step >= s ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-200 text-gray-400 bg-white'
+                      }`}>
+                          {step > s ? <Check className="w-5 h-5" /> : s}
+                      </div>
+                      {idx === 0 && <div className={`h-1 flex-1 mx-4 rounded-full ${step > s ? 'bg-indigo-600' : 'bg-gray-100'}`} />}
+                  </div>
+              ))}
+          </div>
+        ) : (
+          <div className="mt-8 flex items-center justify-between">
+              {[1, 2, 3].map((s) => (
+                  <div key={s} className="flex items-center flex-1 last:flex-none">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition-all ${
+                          step >= s ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-200 text-gray-400 bg-white'
+                      }`}>
+                          {step > s ? <Check className="w-5 h-5" /> : s}
+                      </div>
+                      {s < 3 && <div className={`h-1 flex-1 mx-4 rounded-full ${step > s ? 'bg-indigo-600' : 'bg-gray-100'}`} />}
+                  </div>
+              ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -206,9 +222,11 @@ export default function ContractorOnboarding() {
                 </div>
             </div>
             <div className="flex gap-4">
-                <button type="button" onClick={() => setStep(1)} className="flex-1 border py-3 rounded-xl font-bold flex items-center justify-center"><ArrowLeft className="mr-2" /> Back</button>
+                {mode !== 'edit_kyc' && (
+                  <button type="button" onClick={() => setStep(1)} className="flex-1 border py-3 rounded-xl font-bold flex items-center justify-center"><ArrowLeft className="mr-2" /> Back</button>
+                )}
                 <button disabled={isLoading} className="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 flex justify-center items-center">
-                    {isLoading ? <Loader2 className="animate-spin mr-2" /> : 'Submit KYC'}
+                    {isLoading ? <Loader2 className="animate-spin mr-2" /> : mode === 'edit_kyc' ? 'Update KYC' : 'Submit KYC'}
                 </button>
             </div>
           </form>
@@ -222,7 +240,7 @@ export default function ContractorOnboarding() {
                     <label className="block text-sm font-medium text-gray-700">Services (comma separated)</label>
                     <input required type="text" placeholder="Plumber, Electrician" className="mt-1 w-full p-2.5 border rounded-lg" value={step3Data.services} onChange={e => setStep3Data({...step3Data, services: e.target.value})} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Skill Level</label>
                         <select className="mt-1 w-full p-2.5 border rounded-lg" value={step3Data.skillLevel} onChange={e => setStep3Data({...step3Data, skillLevel: e.target.value})}>
@@ -231,15 +249,19 @@ export default function ContractorOnboarding() {
                             <option value="expert">Expert</option>
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Price Amount</label>
-                        <input required type="number" className="mt-1 w-full p-2.5 border rounded-lg" value={step3Data.amount} onChange={e => setStep3Data({...step3Data, amount: e.target.value})} />
-                    </div>
                 </div>
             </div>
-            <button disabled={isLoading} className="w-full bg-orange-600 text-white py-4 rounded-xl font-bold hover:bg-orange-700 flex justify-center items-center shadow-lg shadow-orange-100">
-                {isLoading ? <Loader2 className="animate-spin mr-2" /> : 'Complete Registration'}
-            </button>
+            <div className="flex gap-4">
+                {mode === 'edit_info' && (
+                    <button type="button" onClick={() => setStep(1)} className="flex-1 border py-3 rounded-xl font-bold flex items-center justify-center"><ArrowLeft className="mr-2" /> Back</button>
+                )}
+                {!mode && (
+                    <button type="button" onClick={() => setStep(2)} className="flex-1 border py-3 rounded-xl font-bold flex items-center justify-center"><ArrowLeft className="mr-2" /> Back</button>
+                )}
+                <button disabled={isLoading} className={`${mode === 'edit_info' ? 'flex-[2]' : 'w-full'} bg-orange-600 text-white py-4 rounded-xl font-bold hover:bg-orange-700 flex justify-center items-center shadow-lg shadow-orange-100`}>
+                    {isLoading ? <Loader2 className="animate-spin mr-2" /> : mode === 'edit_info' ? 'Update Profile' : 'Complete Registration'}
+                </button>
+            </div>
           </form>
         )}
       </div>

@@ -8,6 +8,7 @@ import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import { ROLES, ROLE_LABELS } from '../../../constants/roles.js';
+import { CONTRACTOR_TYPES } from '../../../constants/contractorTypes.js';
 import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
 
 // Roles users can self-assign (exclude admin and unassigned)
@@ -33,6 +34,7 @@ export default function EditProfile() {
     state: '',
     address: '',
     role: '',
+    contractorType: '',
     experience: '',
     bio: '',
   });
@@ -51,6 +53,7 @@ export default function EditProfile() {
         state: user.location?.state || '',
         address: user.location?.address || '',
         role: (user.role && user.role !== 'unassigned') ? user.role : '',
+        contractorType: user.contractorType || '',
         experience: user.experience || '',
         bio: user.bio || '',
       });
@@ -110,6 +113,11 @@ export default function EditProfile() {
       toast.error('Full name is required.');
       return;
     }
+    
+    if (form.role === 'contractor' && !form.contractorType) {
+      toast.error('Contractor Type is required.');
+      return;
+    }
 
     const payload = {
       name: form.name,
@@ -123,7 +131,12 @@ export default function EditProfile() {
       bio: form.bio,
       skills,
     };
-    if (form.role) payload.role = form.role;
+    if (form.role) {
+      payload.role = form.role;
+      if (form.role === 'contractor') {
+        payload.contractorType = form.contractorType;
+      }
+    }
 
     try {
       await updateProfile(user._id, payload);
@@ -298,6 +311,24 @@ export default function EditProfile() {
                 Once set, your profile will appear in the Worker Directory under this role.
               </p>
             </div>
+
+            {form.role === 'contractor' && (
+              <div className="animate-fade-in p-4 mt-3 bg-gray-50 border border-gray-100 rounded-xl">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contractor Type *</label>
+                <select
+                  name="contractorType"
+                  value={form.contractorType}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                >
+                  <option value="" disabled>Select a specialty...</option>
+                  {CONTRACTOR_TYPES.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">Required for contractors to help clients find your specific expertise.</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>

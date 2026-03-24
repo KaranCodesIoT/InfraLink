@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { User, MapPin, Mail, Phone, Briefcase, Calendar, Award, ShieldAlert, Lock, MessageCircle } from 'lucide-react';
 import { userService } from '../services/user.service.js';
-import { ROLE_LABELS } from '../../../constants/roles.js';
+import { ROLES, ROLE_LABELS } from '../../../constants/roles.js';
 import FollowButton from '../../network/components/FollowButton.jsx';
 import BlockButton from '../../network/components/BlockButton.jsx';
 import useNetworkStore from '../../../store/network.store.js';
@@ -66,15 +66,17 @@ export default function PublicProfile() {
               )}
             </div>
             <div className="flex gap-2 items-center">
-              <FollowButton targetId={id} onStatusChange={(s, data) => {
-                setFollowStatus(s);
-                if (data) {
-                  // Message enabled if ANY follow exists in either direction
-                  const hasFollow = (s === 'accepted' || s === 'following' || data.is_following_back);
-                  setCanMessage(hasFollow);
-                  setIsFollowingBack(data.is_following_back || false);
-                }
-              }} />
+              {profile.role !== ROLES.NORMAL_USER && profile.role !== ROLES.CLIENT && (
+                <FollowButton targetId={id} onStatusChange={(s, data) => {
+                  setFollowStatus(s);
+                  if (data) {
+                    // Message enabled if ANY follow exists in either direction
+                    const hasFollow = (s === 'accepted' || s === 'following' || data.is_following_back);
+                    setCanMessage(hasFollow);
+                    setIsFollowingBack(data.is_following_back || false);
+                  }
+                }} />
+              )}
               {canMessage ? (
                 <Link
                   to={`/messages?user=${id}`}
@@ -102,7 +104,7 @@ export default function PublicProfile() {
             </h1>
             <div className="flex flex-wrap items-center gap-3 mt-2">
               <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
-                {roleLabel}
+                {roleLabel}{profile.contractorType ? ` - ${profile.contractorType}` : ''}
               </span>
               <span className="text-sm font-medium text-gray-700">
                  {profile.followersCount || 0} Followers &middot; {profile.followingCount || 0} Following

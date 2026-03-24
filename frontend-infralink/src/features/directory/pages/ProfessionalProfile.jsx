@@ -326,7 +326,7 @@ export default function ProfessionalProfile() {
             <div className="flex justify-between items-center mb-6 border-b pb-2">
               <h2 className="text-lg font-bold text-gray-900">Step 1: Basic Information</h2>
               {isOwner && (
-                <button onClick={() => navigate(`${onboardingPath}?step=1`)} className="text-orange-600 hover:text-orange-800 flex items-center text-sm font-medium transition-colors">
+                <button onClick={() => navigate(`${onboardingPath}?step=1&mode=edit_info`)} className="text-orange-600 hover:text-orange-800 flex items-center text-sm font-medium transition-colors">
                   <Pencil className="w-4 h-4 mr-1" /> Edit
                 </button>
               )}
@@ -367,7 +367,7 @@ export default function ProfessionalProfile() {
             <div className="flex justify-between items-center mb-6 border-b pb-2">
               <h2 className="text-lg font-bold text-gray-900">Step 2: KYC Verification</h2>
               {isOwner && (
-                <button onClick={() => navigate(`${onboardingPath}?step=2`)} className="text-orange-600 hover:text-orange-800 flex items-center text-sm font-medium transition-colors">
+                <button onClick={() => navigate(`${onboardingPath}?step=2&mode=edit_kyc`)} className="text-orange-600 hover:text-orange-800 flex items-center text-sm font-medium transition-colors">
                   <Pencil className="w-4 h-4 mr-1" /> Edit
                 </button>
               )}
@@ -402,11 +402,6 @@ export default function ProfessionalProfile() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <div className="flex justify-between items-center mb-6 border-b pb-2">
               <h2 className="text-lg font-bold text-gray-900">Step 3: Professional Details</h2>
-              {isOwner && (
-                <button onClick={() => navigate(`${onboardingPath}?step=3`)} className="text-orange-600 hover:text-orange-800 flex items-center text-sm font-medium transition-colors">
-                  <Pencil className="w-4 h-4 mr-1" /> Edit
-                </button>
-              )}
             </div>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
