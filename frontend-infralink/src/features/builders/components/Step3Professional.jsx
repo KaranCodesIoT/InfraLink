@@ -7,23 +7,10 @@ export default function Step3Professional() {
   const { formData, setFormData, submitStep3, prevStep, isLoading, error } = useBuilderStore();
   const [validationErrors, setValidationErrors] = useState({});
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-
   const handleServicesChange = (e) => {
     const value = e.target.value;
     const services = value.split(',').map(s => s.trim()).filter(Boolean);
     setFormData({ servicesOffered: services });
-  };
-
-  const removeProject = (index) => {
-    const updated = formData.pastProjects.filter((_, i) => i !== index);
-    setFormData({ pastProjects: updated });
-  };
-
-  // Skip API call in modal during onboarding, we just want the data
-  const handleAddProjectSuccess = (newProjectData) => {
-      setFormData({
-          pastProjects: [...formData.pastProjects, newProjectData]
-      });
   };
 
   const validate = () => {
@@ -89,67 +76,7 @@ export default function Step3Professional() {
             />
           </div>
         </div>
-
-        {/* Dynamic Past Projects */}
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 h-[380px] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <label className="block text-sm font-semibold text-gray-800">Past Projects (Optional during onboarding)</label>
-            <button
-              type="button"
-              onClick={() => setIsProjectModalOpen(true)}
-              className="inline-flex items-center text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Project
-            </button>
-          </div>
-
-          {formData.pastProjects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-center border-2 border-dashed border-gray-200 rounded-xl">
-                <p className="text-sm text-gray-500 mb-3">No projects added yet.</p>
-                <button
-                    type="button"
-                    onClick={() => setIsProjectModalOpen(true)}
-                    className="text-xs font-medium text-gray-700 bg-white border border-gray-300 px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
-                >
-                    Add Your First Project
-                </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {formData.pastProjects.map((project, index) => (
-                <div key={index} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 relative group">
-                  <button
-                    type="button"
-                    onClick={() => removeProject(index)}
-                    className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  
-                  <div className="pr-8">
-                    <h4 className="font-bold text-gray-900 text-sm">{project.title}</h4>
-                    <div className="flex items-center gap-3 mt-1.5 mb-2">
-                        {project.projectType && <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md uppercase tracking-wider">{project.projectType}</span>}
-                        {project.location && (
-                            <span className="text-xs text-gray-500 flex items-center">
-                                <MapPin className="w-3 h-3 mr-1 text-orange-400" /> {project.location}
-                            </span>
-                        )}
-                    </div>
-                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">{project.description}</p>
-                    {project.media?.length > 0 && (
-                        <p className="text-[10px] font-semibold text-orange-600 mt-2 bg-orange-50 inline-block px-2 py-1 rounded-md">
-                            {project.media.length} media attached
-                        </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
-
       <div className="flex justify-between pt-4 border-t border-gray-100">
         <button
           type="button"
@@ -167,21 +94,6 @@ export default function Step3Professional() {
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Complete Profile'}
         </button>
       </div>
-        
-      {/* We pass a custom onSuccess to intercept the form submission. 
-          The modal itself submits to the API directly. During onboarding, the user doesn't have an ID yet 
-          so direct API submission fails! Oh wait... */}
-      {/* Actual FIX: The modal expects to PUT/POST to `/builders/projects`.
-          But in onboarding, the profile isn't fully created. We need the modal to support "offline mode" 
-          where it just returns the data instead of calling API. Let's add that to AddProjectModal. */}
-      {isProjectModalOpen && (
-          <AddProjectModal 
-              isOpen={isProjectModalOpen} 
-              onClose={() => setIsProjectModalOpen(false)} 
-              isOfflineMode={true}
-              onOfflineSubmit={handleAddProjectSuccess}
-          />
-      )}
     </form>
   );
 }

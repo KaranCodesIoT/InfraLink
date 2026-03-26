@@ -15,10 +15,17 @@ const connectRedis = async () => {
             url: process.env.REDIS_URL,
             socket: { reconnectStrategy: false }
         });
-        redisClient.on('error', (err) => logger.warn(`Redis error: ${err.message}`));
+        let errorLogged = false;
+        redisClient.on('error', (err) => {
+            if (!errorLogged) {
+                logger.warn(`Redis error: ${err.message} (further errors suppressed)`);
+                errorLogged = true;
+            }
+        });
         redisClient.on('connect', () => {
             logger.info('Redis connected');
             _redisAvailable = true;
+            errorLogged = false;
         });
         await redisClient.connect();
         _redisAvailable = true;

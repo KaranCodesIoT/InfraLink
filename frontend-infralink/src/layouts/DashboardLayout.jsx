@@ -4,7 +4,7 @@ import {
   Building2, LayoutDashboard, Briefcase, MessageSquare, Bell,
   User, Settings, LogOut, Menu, X, Search, ChevronDown,
   Wrench, Package, Cpu, Star, ShoppingBag, FolderOpen,
-  CreditCard, Bot, Users, BarChart2
+  CreditCard, Bot, Users, BarChart2, PlusCircle, Heart
 } from 'lucide-react';
 import { ROUTES } from '../constants/routes.js';
 import useAuth from '../hooks/useAuth.js';
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD, roles: '*' },
   { label: 'Jobs', icon: Briefcase, path: ROUTES.JOBS, roles: '*' },
   { label: 'Projects', icon: FolderOpen, path: ROUTES.PROJECTS, roles: '*' },
+  { label: 'Post Project', icon: PlusCircle, path: ROUTES.POST_BUILDER_PROJECT, roles: [ROLES.BUILDER] },
   { label: 'Messages', icon: MessageSquare, path: ROUTES.MESSAGES, roles: '*' },
   { label: 'Workers', icon: Users, path: ROUTES.WORKERS, roles: [ROLES.BUILDER, ROLES.CONTRACTOR, ROLES.NORMAL_USER, ROLES.CLIENT, ROLES.ADMIN] },
   { label: 'Marketplace', icon: ShoppingBag, path: ROUTES.MARKETPLACE, roles: '*' },
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { label: 'Services', icon: Wrench, path: ROUTES.SERVICES, roles: '*' },
   { label: 'Payments', icon: CreditCard, path: ROUTES.PAYMENTS, roles: '*' },
   { label: 'Reviews', icon: Star, path: ROUTES.REVIEWS, roles: '*' },
+  { label: 'Favorites', icon: Heart, path: ROUTES.FAVORITES, roles: '*' },
   { label: 'AI Assistant', icon: Bot, path: ROUTES.AI_ASSISTANT, roles: '*' },
   { label: 'Analytics', icon: BarChart2, path: ROUTES.ADMIN_ANALYTICS, roles: [ROLES.ADMIN] },
   { label: 'Manage Users', icon: Users, path: ROUTES.ADMIN_USERS, roles: [ROLES.ADMIN] },

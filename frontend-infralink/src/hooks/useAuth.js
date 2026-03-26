@@ -12,6 +12,7 @@ const useAuth = () => {
     isWorker: [ROLES.WORKER, ROLES.LABOUR, ROLES.CONTRACTOR, ROLES.ARCHITECT].includes(role),
     isClient: [ROLES.CLIENT, ROLES.BUILDER, ROLES.NORMAL_USER].includes(role),
     isSupplier: role === ROLES.SUPPLIER,
+    isBuilder: role === ROLES.BUILDER,
   };
 };
 

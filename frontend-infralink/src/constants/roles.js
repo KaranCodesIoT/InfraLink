@@ -22,6 +22,9 @@ export const HIRING_ROLES = [ROLES.BUILDER, ROLES.CONTRACTOR, ROLES.NORMAL_USER,
 // Roles that look for work
 export const WORKER_ROLES = [ROLES.WORKER, ROLES.CONTRACTOR, ROLES.ARCHITECT, ROLES.LABOUR];
 
+// Roles that can post builder projects
+export const BUILDER_PROJECT_ROLES = [ROLES.BUILDER];
+
 // Label map for display
 export const ROLE_LABELS = {
   [ROLES.UNASSIGNED]: 'Unassigned',

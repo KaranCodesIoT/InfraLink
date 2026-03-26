@@ -14,26 +14,32 @@
 
 import logger from '../utils/logger.js';
 
-/**
- * Recursively sanitise an object's string values.
- * Removes `$` and `.` from keys (MongoDB injection protection).
- */
-const deepSanitize = (obj) => {
-    if (typeof obj !== 'object' || obj === null) return obj;
-    const clean = Array.isArray(obj) ? [] : {};
-    for (const key of Object.keys(obj)) {
-        const safeKey = key.replace(/^\$/, '').replace(/\./g, '_');
-        const val = obj[key];
+const deepSanitizeMutate = (obj) => {
+    if (typeof obj !== 'object' || obj === null) return;
+    
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+        let val = obj[key];
+        let newKey = key;
+        
+        if (typeof key === 'string' && (key.startsWith('$') || key.includes('.'))) {
+            newKey = key.replace(/^\$/, '').replace(/\./g, '_');
+            delete obj[key];
+        }
+        
         if (typeof val === 'string') {
-            // Basic XSS: strip <script> tags
-            clean[safeKey] = val.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-        } else if (typeof val === 'object') {
-            clean[safeKey] = deepSanitize(val);
+            obj[newKey] = val.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        } else if (typeof val === 'object' && val !== null) {
+            deepSanitizeMutate(val);
+            if (newKey !== key) {
+                obj[newKey] = val;
+            }
         } else {
-            clean[safeKey] = val;
+            if (newKey !== key) {
+                obj[newKey] = val;
+            }
         }
     }
-    return clean;
 };
 
 /**
@@ -41,9 +47,9 @@ const deepSanitize = (obj) => {
  */
 export const sanitizerMiddleware = (req, _res, next) => {
     try {
-        if (req.body) req.body = deepSanitize(req.body);
-        if (req.query) req.query = deepSanitize(req.query);
-        if (req.params) req.params = deepSanitize(req.params);
+        if (req.body) deepSanitizeMutate(req.body);
+        if (req.query) deepSanitizeMutate(req.query);
+        if (req.params) deepSanitizeMutate(req.params);
     } catch (err) {
         logger.warn(`Sanitizer error: ${err.message}`);
     }

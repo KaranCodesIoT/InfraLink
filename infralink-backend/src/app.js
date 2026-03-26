@@ -46,17 +46,20 @@ import builderRoutes from './modules/builders/builder.routes.js';
 import contractorRoutes from './modules/contractors/contractor.routes.js';
 import networkRoutes from './modules/network/network.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
+import builderProjectRoutes from './modules/builderProjects/builderProject.routes.js';
 
 const app = express();
 
 // Security
 app.use(helmet(helmetOptions));
 app.use(cors(corsOptions));
-app.use(sanitizerMiddleware);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Input sanitization (must be after body parsing)
+app.use(sanitizerMiddleware);
 app.use(compression());
 
 // Serve static uploads (avatars, etc.)
@@ -103,6 +106,7 @@ app.use(`${V1}/builders`, builderRoutes);
 app.use(`${V1}/contractors`, contractorRoutes);
 app.use(`${V1}/network`, networkRoutes);
 app.use(`${V1}/upload`, uploadRoutes);
+app.use(`${V1}/builder-projects`, builderProjectRoutes);
 
 // Root Route (Welcome)
 app.get('/', (req, res) => {

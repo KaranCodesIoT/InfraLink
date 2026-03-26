@@ -30,6 +30,10 @@ export const ROUTES = {
   PROJECT_DETAIL: '/projects/:id',
   PROJECT_NEW: '/projects/new',
 
+  // Builder Projects
+  BUILDER_PROJECTS: '/builder-projects',
+  POST_BUILDER_PROJECT: '/builder-projects/post',
+
   // Marketplace
   MARKETPLACE: '/marketplace',
   MATERIAL_DETAIL: '/marketplace/:id',
@@ -56,6 +60,7 @@ export const ROUTES = {
   // Profile
   PROFILE: '/profile',
   PROFILE_EDIT: '/profile/edit',
+  FAVORITES: '/favorites',
 
   // Search
   SEARCH: '/search',

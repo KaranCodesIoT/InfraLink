@@ -33,6 +33,9 @@ import NetworkHub from '../features/network/pages/NetworkHub.jsx';
 import PublicProfile from '../features/profile/pages/PublicProfile.jsx';
 import MyJobs from '../features/jobs/pages/MyJobs.jsx';
 import MyApplications from '../features/jobs/pages/MyApplications.jsx';
+import PostBuilderProject from '../features/builderProjects/pages/PostBuilderProject.jsx';
+import BuilderProjectDetail from '../features/builderProjects/pages/BuilderProjectDetail.jsx';
+import FavoriteProjects from '../features/builderProjects/pages/FavoriteProjects.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -77,6 +80,9 @@ const router = createBrowserRouter([
           { path: '/directory/browse', element: <ProfessionalDirectory /> },
           { path: ROUTES.DIRECTORY_DETAIL, element: <ProfessionalProfile /> },
           { path: '/directory/contractor/:id', element: <ContractorProfile /> },
+          { path: ROUTES.POST_BUILDER_PROJECT, element: <PostBuilderProject /> },
+          { path: '/builder-projects/:id', element: <BuilderProjectDetail /> },
+          { path: ROUTES.FAVORITES, element: <FavoriteProjects /> },
 
 
           // Role specific routes

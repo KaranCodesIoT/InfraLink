@@ -1,5 +1,5 @@
 import Escalation from './escalation.model.js';
-import { escalationQueue } from '../../../queues/escalation.queue.js';
+import getEscalationQueue from '../../../queues/escalation.queue.js';
 import { ESCALATION_STATUS } from '../../../constants/aiConstants.js';
 import { getModel } from '../../../config/ai.js';
 import { AI_MODELS } from '../../../constants/aiConstants.js';
@@ -24,8 +24,13 @@ export const createEscalation = async (userId, { subject, description, chatSessi
         user: userId, subject, description, aiSummary, chatSession, priority, attachments,
     });
 
-    // Queue for agent assignment
-    await escalationQueue.add({ escalationId: escalation._id, priority }, { priority: priority === 'urgent' ? 1 : 3 });
+    // Queue for agent assignment (skip if Redis unavailable)
+    const queue = getEscalationQueue();
+    if (queue) {
+        await queue.add({ escalationId: escalation._id, priority }, { priority: priority === 'urgent' ? 1 : 3 });
+    } else {
+        logger.warn('Escalation queuing skipped — Redis unavailable.');
+    }
 
     return escalation;
 };
