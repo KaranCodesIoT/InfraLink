@@ -95,6 +95,17 @@ const useBuilderProjectStore = create((set) => ({
     }
   },
 
+  deleteProject: async (id, reason) => {
+    set({ isSubmitting: true, error: null });
+    try {
+      await api.delete(`/builder-projects/${id}`, { data: { reason } });
+      set({ currentProject: null, isSubmitting: false });
+    } catch (e) {
+      set({ error: getErrorMessage(e), isSubmitting: false });
+      throw e;
+    }
+  },
+
   clearError: () => set({ error: null }),
 }));
 

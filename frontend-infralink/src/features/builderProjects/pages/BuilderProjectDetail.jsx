@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft } from 'lucide-react';
+import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Trash2, Settings, AlertTriangle } from 'lucide-react';
 import useAuthStore from '../../../store/auth.store';
 import useBuilderProjectStore from '../../../store/builderProject.store';
+import useFavoritesStore from '../../../store/favorites.store';
 import useUIStore from '../../../store/ui.store';
 
 export default function BuilderProjectDetail() {
@@ -10,7 +11,11 @@ export default function BuilderProjectDetail() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { toast } = useUIStore();
-  const { fetchProjectById, currentProject, isLoading, addUpdate, uploadMedia, updateProject, isSubmitting } = useBuilderProjectStore();
+  const { fetchProjectById, currentProject, isLoading, addUpdate, uploadMedia, updateProject, deleteProject, isSubmitting } = useBuilderProjectStore();
+  
+  // Modals & Delete Logic
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
 
   const [updateText, setUpdateText] = useState('');
   const [updateFiles, setUpdateFiles] = useState([]);
@@ -61,6 +66,25 @@ export default function BuilderProjectDetail() {
       toast.error('Failed to update images');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!deleteReason.trim()) {
+      toast.error('Please provide a reason for deletion');
+      return;
+    }
+    try {
+      await deleteProject(project._id, deleteReason);
+      toast.success('Project deleted successfully');
+      // Cleanup locally cached favorites gracefully
+      if (useFavoritesStore.getState().isFavorite(user?._id, project._id)) {
+        useFavoritesStore.getState().toggleFavorite(user?._id, project);
+      }
+      setShowDeleteModal(false);
+      navigate('/dashboard'); // Navigate home/dashboard after deletion
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete project');
     }
   };
 
@@ -142,18 +166,41 @@ export default function BuilderProjectDetail() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
         <div className="p-6 md:p-8 border-b border-gray-100 flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.projectName}</h1>
-              {project.projectStatus === 'Ready to Move' ? (
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
-                  Ready to Move
-                </span>
-              ) : (
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
-                  Under Construction
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {project.projectStatus === 'Ready to Move' || project.projectStatus === 'Completed' ? (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm">
+                    {project.projectStatus}
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200 shadow-sm">
+                    {project.projectStatus}
+                  </span>
+                )}
+              </div>
             </div>
+            
+            {/* Owner Action Buttons */}
+            {isOwner && (
+              <div className="flex items-center gap-2 mt-3 mb-4">
+                <button 
+                  onClick={() => toast.info('Detailed edit mode coming soon!')}
+                  className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 shadow-sm transition"
+                >
+                  <Settings className="w-3.5 h-3.5" /> Edit Project
+                </button>
+                {(project.projectStatus !== 'Ready to Move' && project.projectStatus !== 'Completed') && (
+                  <button 
+                    onClick={() => setShowDeleteModal(true)}
+                    className="px-3 py-1.5 text-xs font-semibold border border-red-200 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-1.5 shadow-sm transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Project
+                  </button>
+                )}
+              </div>
+            )}
+
             <p className="text-gray-500 flex items-center gap-1.5 md:text-lg">
               <MapPin className="w-5 h-5 text-gray-400" />
               {project.area}, {project.city}
@@ -405,6 +452,54 @@ export default function BuilderProjectDetail() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Project</h3>
+              <p className="text-gray-500 text-sm mb-4">
+                Are you sure you want to permanently delete <strong>{project.projectName}</strong>? This action cannot be undone. All related updates and gallery images will be cleared.
+              </p>
+              
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Reason for Deletion <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  placeholder="e.g., Sold to another developer, Canceled..."
+                  className="w-full rounded-xl border border-gray-200 shadow-sm p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-4 border-t border-gray-100 flex items-center justify-end gap-3">
+              <button 
+                onClick={() => { setShowDeleteModal(false); setDeleteReason(''); }}
+                className="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteProject}
+                disabled={!deleteReason.trim() || isSubmitting}
+                className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 shadow-sm transition"
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
