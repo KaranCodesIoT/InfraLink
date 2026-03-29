@@ -147,7 +147,7 @@ export default function ProfessionalProfile() {
         
         {/* Profile Info Sidebar / Header */}
         <div className={`space-y-6 ${role === 'builder' ? 'w-full' : ''}`}>
-          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${role === 'builder' ? 'flex flex-col md:flex-row items-center md:items-start gap-8' : ''}`}>
+          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden ${role === 'builder' ? 'flex flex-col md:flex-row items-center md:items-start gap-8' : ''}`}>
             
             <div className={`flex flex-col items-center ${role === 'builder' ? 'shrink-0' : ''}`}>
               <div className="relative group mb-4">
@@ -183,10 +183,10 @@ export default function ProfessionalProfile() {
               </div>
             </div>
             
-            <div className={`text-center ${role === 'builder' ? 'md:text-left flex-1 w-full' : 'w-full'}`}>
-              <div className={`flex flex-col sm:flex-row items-center ${role === 'builder' ? 'md:items-start justify-between' : 'justify-center'} gap-3 mb-1`}>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{displayName}</h1>
+            <div className={`text-center ${role === 'builder' ? 'md:text-left flex-1 w-full' : 'w-full'} min-w-0`}>
+              <div className={`flex flex-col items-center ${role === 'builder' ? 'md:items-start md:flex-row justify-between' : 'justify-center'} gap-3 mb-1`}>
+                <div className="min-w-0 max-w-full">
+                  <h1 className="text-2xl font-bold text-gray-900 break-words">{displayName}</h1>
                   <p className="text-orange-600 font-medium capitalize text-xs bg-orange-50 inline-block px-3 py-1 rounded-full mt-2 mb-4">
                     {builderProfile?.profileType || (role === 'contractor' ? 'Contractor' : role.replace('_', ' '))}
                   </p>
@@ -194,7 +194,7 @@ export default function ProfessionalProfile() {
 
                 {/* Follow / Block / Message Actions */}
                 {!isOwner && selectedProfessional?._id && (
-                  <div className={`space-y-2 pt-2 ${role === 'builder' ? 'min-w-[140px]' : 'w-full'}`}>
+                  <div className={`space-y-2 pt-2 ${role === 'builder' ? 'min-w-[140px]' : 'w-full max-w-[220px]'}`}>
                     <div className="flex gap-2 justify-center">
                       <FollowButton
                         targetId={selectedProfessional._id}

@@ -1,0 +1,15 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  write to custom object with { processEnv: myObject }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒñû agentic secret storage: https://dotenvx.com/as2
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒ¢á∩╕Å  run anywhere with `dotenvx run -- yourcommand`
+19:37:28 [[32minfo[39m]: Γ£à Loaded custom NLP Intent Model.
+19:37:28 [[32minfo[39m]: Γ£à Loaded custom NLP Skill Model.
+--- Verification Start ---
+PASS (Skill): "Iron gate welding" -> welder
+PASS (Skill): "αñ«αÑüαñ¥αÑç αñªαÑï αñáαÑçαñòαÑçαñªαñ╛αñ░ αñÜαñ╛αñ╣αñ┐αñÅ" -> builder
+PASS (Interpreter): "Bathroom pipe burst, need help fast"
+FAIL (Interpreter): "αñ«αÑüαñ¥αÑç αñªαÑï αñáαÑçαñòαÑçαñªαñ╛αñ░ αñÜαñ╛αñ╣αñ┐αñÅ" -> Actual: {"skill":"builder","urgency":"medium","budget":"medium","location":"","count":1}, Expected: {"skill":"builder","urgency":"medium","budget":"medium","location":"","count":2}
+PASS (Interpreter): "Need cheap electrician in Mumbai"
+PASS (Interpreter): "plumbr urgently"
+--- Passed: 5/6 ---

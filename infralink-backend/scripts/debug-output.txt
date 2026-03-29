@@ -1,0 +1,39 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ΓÜí∩╕Å secrets for agents: https://dotenvx.com/as2
+19:24:39 [[32minfo[39m]: Γ£à Loaded custom NLP Intent Model.
+19:24:39 [[32minfo[39m]: Γ£à Loaded custom NLP Skill Model.
+--- Verification Start ---
+  Role: welder, Score: 40
+  Winner by Score: welder (40)
+PASS (Skill): "Iron gate welding" -> welder
+  Role: electrician, Score: 60
+  Winner by Score: electrician (60)
+PASS (Skill): "bijli wala" -> electrician
+  Role: contractor, Score: 35
+  Winner by Score: contractor (35)
+PASS (Skill): "αñ«αÑüαñ¥αÑç αñªαÑï αñáαÑçαñòαÑçαñªαñ╛αñ░ αñÜαñ╛αñ╣αñ┐αñÅ" -> contractor
+  Role: builder, Score: 35
+  Role: labour, Score: 50
+  Winner by Score: labour (50)
+PASS (Skill): "any two liver and Builders" -> labour
+  Role: ac_technician, Score: 36
+  Winner by Score: ac_technician (36)
+PASS (Skill): "ac gas refill" -> ac_technician
+  Role: plumber, Score: 35
+  Winner by Score: plumber (35)
+FAIL (Interpreter): "I need 2 plumbers in Mumbai urgently" -> Actual: {"skill":"plumber","urgency":"high","budget":"medium","location":"mumbai urgently","count":2}, Expected: {"skill":"plumber","count":2,"location":"Mumbai","urgency":"high","budget":"medium"}
+  Role: painter, Score: 10
+  Winner by Score: painter (10)
+FAIL (Interpreter): "αñòαñ« αñ¼αñ£αñƒ αñ«αÑçαñé 5 αñ¬αÑçαñéαñƒαñ░ αñÜαñ╛αñ╣αñ┐αñÅ" -> Actual: {"skill":"painter","urgency":"medium","budget":"medium","location":"","count":5}, Expected: {"skill":"painter","count":5,"budget":"low","urgency":"medium"}
+  Role: plumber, Score: 8
+  Role: carpenter, Score: 8
+  Role: ac_technician, Score: 4
+  Winner by Score: plumber (8)
+FAIL (Interpreter): "urgent ac leak fix near Seawoods" -> Actual: {"skill":"plumber","urgency":"high","budget":"medium","location":"seawoods","count":1}, Expected: {"skill":"ac_technician","urgency":"high","location":"Seawoods"}
+  Role: electrician, Score: 55
+  Winner by Score: electrician (55)
+PASS (Interpreter): "one electrician for premium work"
+--- Passed: 6/9 ---

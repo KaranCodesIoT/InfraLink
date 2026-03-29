@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Left building with curved base -->
+  <path d="M62 140 C62 140 58 130 58 110 L58 75 C58 72 60 70 63 70 L73 70 C76 70 78 72 78 75 L78 100 C78 100 78 108 72 118 C66 128 62 140 62 140 Z" fill="#333333"/>
+
+  <!-- Center tall building (tallest) -->
+  <path d="M85 140 L85 48 L92 35 L100 48 L100 140 Z" fill="#333333"/>
+
+  <!-- Right building -->
+  <path d="M108 140 L108 62 C108 59 110 57 113 57 L128 57 C131 57 133 59 133 62 L133 105 C133 105 138 118 138 125 L138 140 Z" fill="#333333"/>
+
+  <!-- Inner cutout on right building (window/door detail) -->
+  <path d="M115 75 L115 105 L126 105 L126 75 Z" fill="#f5f5f5"/>
+
+  <!-- Curved wave swoosh -->
+  <path d="M40 145 C55 130 70 138 85 135 C100 132 105 128 115 132 C125 136 135 142 160 135" stroke="#333333" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+  <!-- Second wave line (thinner, below) -->
+  <path d="M50 158 C65 148 78 155 95 150 C112 145 125 148 155 152" stroke="#333333" stroke-width="5" stroke-linecap="round" fill="none"/>
+</svg>
