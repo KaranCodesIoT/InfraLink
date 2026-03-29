@@ -28,6 +28,8 @@ import CompleteProfile from '../features/auth/pages/CompleteProfile.jsx';
 import BuilderOnboarding from '../features/builders/pages/BuilderOnboarding.jsx';
 import ContractorOnboarding from '../features/contractors/pages/ContractorOnboarding.jsx';
 import ContractorProfile from '../features/directory/pages/ContractorProfile.jsx';
+import BuilderDirectory from '../features/directory/pages/BuilderDirectory.jsx';
+import BuilderProfile from '../features/directory/pages/BuilderProfile.jsx';
 import Messages from '../features/messaging/pages/Messages.jsx';
 import NetworkHub from '../features/network/pages/NetworkHub.jsx';
 import PublicProfile from '../features/profile/pages/PublicProfile.jsx';
@@ -80,6 +82,8 @@ const router = createBrowserRouter([
           { path: '/directory/browse', element: <ProfessionalDirectory /> },
           { path: ROUTES.DIRECTORY_DETAIL, element: <ProfessionalProfile /> },
           { path: '/directory/contractor/:id', element: <ContractorProfile /> },
+          { path: '/directory/builders', element: <BuilderDirectory /> },
+          { path: '/directory/builder/:id', element: <BuilderProfile /> },
           { path: ROUTES.POST_BUILDER_PROJECT, element: <PostBuilderProject /> },
           { path: '/builder-projects/:id', element: <BuilderProjectDetail /> },
           { path: ROUTES.FAVORITES, element: <FavoriteProjects /> },

@@ -64,7 +64,7 @@ export default function ProfessionalCard({ professional }) {
 
       <div className="border-t border-gray-50 p-4">
         <Link
-          to={role === 'contractor' ? `/directory/contractor/${_id}` : `${ROUTES.DIRECTORY}/${_id}`}
+          to={role === 'contractor' ? `/directory/contractor/${_id}` : role === 'builder' ? `/directory/builder/${_id}` : `${ROUTES.DIRECTORY}/${_id}`}
           className="w-full flex items-center justify-center space-x-2 text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
         >
           <span>View Detailed Profile</span>

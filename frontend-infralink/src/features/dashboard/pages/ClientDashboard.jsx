@@ -39,6 +39,7 @@ export default function ClientDashboard() {
       id: 1,
       title: 'Builder & Developer',
       role: ROLES.BUILDER,
+      path: '/directory/builders',
       icon: Building2,
       description: 'Find real estate developers and construction firms.',
       color: 'bg-blue-500',

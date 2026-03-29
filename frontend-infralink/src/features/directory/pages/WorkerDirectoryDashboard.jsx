@@ -83,7 +83,11 @@ export default function WorkerDirectoryDashboard() {
 
   const handleCardClick = (roleId) => {
     if (!roleId) return; // Coming soon
-    navigate(`/directory/browse?role=${roleId}`);
+    if (roleId === 'builder') {
+      navigate('/directory/builders');
+    } else {
+      navigate(`/directory/browse?role=${roleId}`);
+    }
   };
 
   const totalProfessionals = Object.values(categoryStats).reduce((a, b) => a + b, 0);
