@@ -16,6 +16,7 @@ router.get('/', requireRole('admin'), userController.getAllUsers);
 router.get('/:id', verifyBlock, userController.getUserById);
 router.patch('/:id', validate(updateUserSchema), userController.updateUser);
 router.post('/:id/avatar', uploadSingle('avatar'), userController.uploadAvatar);
+router.post('/:id/resume', uploadSingle('resume'), userController.uploadResume);
 router.delete('/:id', requireRole('admin'), userController.deleteUser);
 
 export default router;

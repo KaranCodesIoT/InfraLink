@@ -22,11 +22,29 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
         filter.role = role;
     }
 
-    // Basic search by name or skills
+    // Basic search by name, skills, or contractorType
     if (search) {
+        const searchRegex = new RegExp(search, 'i');
+
+        // Look up matching skills across all professional profiles
+        const [workerProfiles, builderProfiles, contractorProfiles] = await Promise.all([
+            WorkerProfile.find({ $or: [{ skills: searchRegex }, { trade: searchRegex }] }).select('user').lean(),
+            BuilderProfile.find({ $or: [{ 'professionalDetails.servicesOffered': searchRegex }, { companyName: searchRegex }] }).select('user').lean(),
+            ContractorProfile.find({ $or: [{ 'professionalDetails.services': searchRegex }, { fullName: searchRegex }] }).select('user').lean()
+        ]);
+
+        const matchingProfileUserIds = [
+            ...workerProfiles.map(p => p.user),
+            ...builderProfiles.map(p => p.user),
+            ...contractorProfiles.map(p => p.user)
+        ];
+
         andConditions.push({
             $or: [
-                { name: { $regex: search, $options: 'i' } }
+                { name: { $regex: search, $options: 'i' } },
+                { contractorType: { $regex: search, $options: 'i' } },
+                { professionType: { $regex: search, $options: 'i' } },
+                { _id: { $in: matchingProfileUserIds } }
             ]
         });
     }
@@ -43,15 +61,17 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
 
     if (rating) {
         const minRating = parseFloat(rating);
-        const [builders, contractors, workers] = await Promise.all([
+        const [builders, contractors, workers, usersWithRating] = await Promise.all([
             BuilderProfile.find({ averageRating: { $gte: minRating } }).select('user').lean(),
             ContractorProfile.find({ averageRating: { $gte: minRating } }).select('user').lean(),
-            WorkerProfile.find({ averageRating: { $gte: minRating } }).select('user').lean()
+            WorkerProfile.find({ averageRating: { $gte: minRating } }).select('user').lean(),
+            User.find({ averageRating: { $gte: minRating } }).select('_id').lean()
         ]);
         const ratedUserIds = [
             ...builders.map(p => p.user),
             ...contractors.map(p => p.user),
-            ...workers.map(p => p.user)
+            ...workers.map(p => p.user),
+            ...usersWithRating.map(u => u._id)
         ];
         andConditions.push({ _id: { $in: ratedUserIds } });
     }
@@ -96,7 +116,7 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
                 prof.followersCount = cp.followersCount || 0;
                 prof.averageRating = cp.averageRating || 0;
             }
-        } else if (prof.role === 'worker') {
+        } else if (prof.role === 'worker' || prof.role === 'labour') {
             const wp = await WorkerProfile.findOne({ user: prof._id })
                 .select('skills yearsOfExperience followersCount averageRating trade')
                 .lean();
@@ -161,7 +181,7 @@ export const getProfessionalById = async (id, requesterUserId) => {
                 user.isFollowing = false;
             }
         }
-    } else if (user.role === 'worker') {
+    } else if (user.role === 'worker' || user.role === 'labour') {
         const workerProfile = await WorkerProfile.findOne({ user: id }).lean();
         if (workerProfile) {
             user.workerProfile = workerProfile;

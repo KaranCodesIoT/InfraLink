@@ -3,7 +3,7 @@ import { MapPin, User, ArrowRight, Briefcase, Star } from 'lucide-react';
 import { ROUTES } from '../../../constants/routes.js';
 
 export default function ProfessionalCard({ professional }) {
-  const { _id, name, role, location, avatar, skills = [], companyName, yearsOfExperience } = professional;
+  const { _id, name, role, location, avatar, skills = [], companyName, yearsOfExperience, professionType } = professional;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
@@ -23,7 +23,7 @@ export default function ProfessionalCard({ professional }) {
               </h3>
               <div className="flex items-center text-sm text-gray-500 mt-0.5 capitalize">
                 <Briefcase className="w-3.5 h-3.5 mr-1" />
-                {role.replace('_', ' ')}
+                {professionType || role.replace('_', ' ')}
                 {yearsOfExperience !== undefined && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-xs">{yearsOfExperience} Yrs Exp</span>}
               </div>
               

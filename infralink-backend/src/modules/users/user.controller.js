@@ -73,6 +73,24 @@ export const uploadAvatar = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const uploadResume = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ status: 'error', message: 'No file provided' });
+        }
+        
+        const authUserId = req.user._id.toString();
+        const paramId = req.params.id.toString();
+        
+        if (authUserId !== paramId && req.user.role !== 'admin') {
+            return res.status(403).json({ status: 'error', message: 'Not authorized to update this profile' });
+        }
+
+        const user = await userService.uploadResume(paramId, req.file.buffer, req.file.originalname);
+        sendSuccess(res, user, 'Resume updated successfully');
+    } catch (e) { next(e); }
+};
+
 export const getAllUsers = async (req, res, next) => {
     try {
         const { users, pagination } = await userService.getAllUsers(req.query);
