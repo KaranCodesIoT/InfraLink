@@ -37,6 +37,7 @@ import PostBuilderProject from '../features/builderProjects/pages/PostBuilderPro
 import BuilderProjectDetail from '../features/builderProjects/pages/BuilderProjectDetail.jsx';
 import FavoriteProjects from '../features/builderProjects/pages/FavoriteProjects.jsx';
 import Projects from '../features/builderProjects/pages/Projects.jsx';
+import ARViewer from '../features/builderProjects/pages/ARViewer.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: '/ar-view/:id',
+    element: <ARViewer />,
   },
   {
     path: '*',

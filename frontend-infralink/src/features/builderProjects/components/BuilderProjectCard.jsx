@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Building2, CalendarDays, IndianRupee, ShieldCheck, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Building2, CalendarDays, IndianRupee, ShieldCheck, Heart, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import useFavoritesStore from '../../../store/favorites.store.js';
 import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
@@ -10,6 +10,7 @@ export default function BuilderProjectCard({ project }) {
   const { user } = useAuthStore();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
   const { toast } = useUIStore();
+  const navigate = useNavigate();
 
   const isHearted = isFavorite(user?._id, project._id);
 
@@ -84,6 +85,21 @@ export default function BuilderProjectCard({ project }) {
             </span>
           )}
         </div>
+
+        {project.arModelUrl && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/ar-view/${project._id}`);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 text-white rounded-full font-bold shadow-lg transition-transform hover:scale-105"
+            >
+              <Maximize2 className="w-4 h-4" /> 3D View
+            </button>
+          </div>
+        )}
 
         <button 
           onClick={handleFavoriteClick}

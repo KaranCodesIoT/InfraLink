@@ -6,7 +6,8 @@ import { HTTP_STATUS } from '../constants/httpStatus.js';
 const ALLOWED_MIME_TYPES = [
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
     'application/pdf', 
-    'video/mp4', 'video/webm'
+    'video/mp4', 'video/webm',
+    'model/gltf-binary'
 ];
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 

@@ -96,6 +96,13 @@ export default function PostBuilderProject() {
         videoUrl = url;
       }
 
+      // 3. Upload GLB model
+      let glbUrl = '';
+      if (formData._glbFile) {
+        const [url] = await uploadMedia([formData._glbFile]);
+        glbUrl = url;
+      }
+
       // 3. Build payload (strip internal keys)
       const payload = {
         projectName: formData.projectName,
@@ -110,6 +117,7 @@ export default function PostBuilderProject() {
         possessionDate: formData.possessionDate || null,
         images: imageUrls,
         video: videoUrl || undefined,
+        arModelUrl: glbUrl || undefined,
         description: formData.description,
         reraNumber: formData.reraNumber || undefined,
         amenities: formData.amenities || [],

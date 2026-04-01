@@ -37,6 +37,7 @@ const builderProjectSchema = new mongoose.Schema(
             },
         },
         video: { type: String },
+        arModelUrl: { type: String, trim: true },
         description: { type: String, required: true },
 
         // ── Step 4: Trust & Details ─────────────────────────────────────────
