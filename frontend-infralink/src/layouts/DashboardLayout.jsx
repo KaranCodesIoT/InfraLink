@@ -3,8 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, LayoutDashboard, Briefcase, MessageSquare, Bell,
   User, Settings, LogOut, Menu, X, Search, ChevronDown,
-  Wrench, Package, Cpu, Star, ShoppingBag, FolderOpen,
-  CreditCard, Bot, Users, BarChart2, PlusCircle, Heart, PenSquare, HardHat
+  Star, FolderOpen, CreditCard, Bot, Users, BarChart2, PlusCircle, Heart
 } from 'lucide-react';
 import { ROUTES } from '../constants/routes.js';
 import useAuth from '../hooks/useAuth.js';
@@ -12,7 +11,6 @@ import useNotificationStore from '../store/notification.store.js';
 import useUIStore from '../store/ui.store.js';
 import { ROLES } from '../constants/roles.js';
 import { resolveAvatarUrl } from '../utils/avatarUrl.js';
-import PostFormModal from '../features/posts/components/PostFormModal.jsx';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD, roles: '*' },
@@ -20,11 +18,6 @@ const NAV_ITEMS = [
   { label: 'Projects', icon: FolderOpen, path: ROUTES.PROJECTS, roles: '*' },
   { label: 'Post Project', icon: PlusCircle, path: ROUTES.POST_BUILDER_PROJECT, roles: [ROLES.BUILDER] },
   { label: 'Messages', icon: MessageSquare, path: ROUTES.MESSAGES, roles: '*' },
-  { label: 'Workers', icon: Users, path: ROUTES.WORKERS, roles: [ROLES.BUILDER, ROLES.CONTRACTOR, ROLES.NORMAL_USER, ROLES.CLIENT, ROLES.ADMIN] },
-  { label: 'Contractors', icon: HardHat, path: '/directory/contractors', roles: '*' },
-  { label: 'Marketplace', icon: ShoppingBag, path: ROUTES.MARKETPLACE, roles: '*' },
-  { label: 'Equipment', icon: Cpu, path: ROUTES.EQUIPMENT, roles: '*' },
-  { label: 'Services', icon: Wrench, path: ROUTES.SERVICES, roles: '*' },
   { label: 'Payments', icon: CreditCard, path: ROUTES.PAYMENTS, roles: '*' },
   { label: 'Reviews', icon: Star, path: ROUTES.REVIEWS, roles: '*' },
   { label: 'Favorites', icon: Heart, path: ROUTES.FAVORITES, roles: '*' },
@@ -40,7 +33,6 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [postModalOpen, setPostModalOpen] = useState(false);
 
   const POST_ROLES = ['contractor', 'builder', 'engineer', 'architect'];
   const canPost = POST_ROLES.includes(role);
@@ -114,16 +106,7 @@ export default function DashboardLayout() {
           </button>
 
           <div className="flex items-center gap-3">
-            {/* Post button for eligible roles */}
-            {canPost && (
-              <button
-                onClick={() => setPostModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors shadow-sm shadow-orange-200"
-              >
-                <PenSquare className="w-4 h-4" />
-                <span className="hidden sm:inline">Post</span>
-              </button>
-            )}
+
 
             {/* Notifications */}
             <Link
@@ -190,8 +173,6 @@ export default function DashboardLayout() {
         </main>
       </div>
 
-      {/* Post Modal */}
-      <PostFormModal isOpen={postModalOpen} onClose={() => setPostModalOpen(false)} />
     </div>
   );
 }

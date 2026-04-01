@@ -47,3 +47,30 @@ export const addUpdate = async (req, res, next) => {
         sendSuccess(res, project, 'Update added successfully');
     } catch (e) { next(e); }
 };
+
+export const likeProject = async (req, res, next) => {
+    try {
+        const result = await service.toggleLikeProject(req.params.id, req.user._id);
+        sendSuccess(res, result, 'Like toggled');
+    } catch (e) { next(e); }
+};
+
+export const addComment = async (req, res, next) => {
+    try {
+        const { text } = req.body;
+        if (!text) {
+            const err = new Error('Comment text is required');
+            err.statusCode = 400;
+            throw err;
+        }
+        const comment = await service.addCommentToProject(req.params.id, req.user._id, text);
+        sendSuccess(res, comment, 'Comment added');
+    } catch (e) { next(e); }
+};
+
+export const getComments = async (req, res, next) => {
+    try {
+        const comments = await service.getProjectComments(req.params.id);
+        sendSuccess(res, comments);
+    } catch (e) { next(e); }
+};

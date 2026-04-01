@@ -102,18 +102,12 @@ export default function ClientDashboard() {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* Header section without Post New Project button */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard Overview</h1>
           <p className="text-gray-500 mt-1">Hello {user?.name}, manage your infrastructure projects and professional network.</p>
         </div>
-        <Link
-          to={ROUTES.JOB_POST}
-          className="flex items-center justify-center space-x-2 bg-orange-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-700 hover:-translate-y-0.5 transition-all"
-        >
-          <PlusCircle className="w-5 h-5" />
-          <span>Post New Project</span>
-        </Link>
       </div>
 
       {/* Legacy Stats (kept for context) */}

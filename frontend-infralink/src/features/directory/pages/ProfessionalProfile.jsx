@@ -7,6 +7,7 @@ import BlockButton from '../../network/components/BlockButton.jsx';
 import useNetworkStore from '../../../store/network.store.js';
 import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
 import BuilderProjectList from '../../builderProjects/components/BuilderProjectList.jsx';
+import { getOrCreateConversation } from '../../messaging/services/message.service.js';
 
 export default function ProfessionalProfile() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ export default function ProfessionalProfile() {
   const [reviewText, setReviewText] = useState('');
   const [ratingLoading, setRatingLoading] = useState(false);
   const [canMessage, setCanMessage] = useState(false);
+  const [isHiring, setIsHiring] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [builderProjects, setBuilderProjects] = useState([]);
   const avatarInputRef = useRef(null);
@@ -118,6 +120,27 @@ export default function ProfessionalProfile() {
       setReviewText('');
     } catch (err) {} 
     finally { setRatingLoading(false); }
+  };
+
+  const handleHireClick = async () => {
+    if (!currentUser) return toast.error('Please log in to hire someone');
+    if (!selectedProfessional) return;
+    
+    setIsHiring(true);
+    try {
+      const { data } = await getOrCreateConversation({
+        recipientId: selectedProfessional._id,
+        workIntent: 'hire_now'
+      });
+      navigate(`/messages/${data.data._id}`);
+      
+      const pName = selectedProfessional.workerProfile?.fullName || selectedProfessional.name;
+      toast.success(`Started a hiring conversation with ${pName || 'Professional'}`);
+    } catch (error) {
+      toast.error('Failed to start conversation. They might have messaging disabled.');
+    } finally {
+      setIsHiring(false);
+    }
   };
 
   const handleAvatarUpload = async (e) => {
@@ -378,6 +401,20 @@ export default function ProfessionalProfile() {
                   </>
                 )}
               </div>
+
+              {/* HIRE BUTTON FOR LABOUR */}
+              {!isOwner && (role === 'labour' || role === 'worker') && (
+                <div className="mb-6 w-full">
+                  <button
+                    onClick={handleHireClick}
+                    disabled={isHiring}
+                    className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-orange-700 hover:-translate-y-0.5 transition-all outline-none"
+                  >
+                    {isHiring ? <Loader2 className="w-5 h-5 animate-spin" /> : <Briefcase className="w-5 h-5" />}
+                    Hire {displayName.split(' ')[0]}
+                  </button>
+                </div>
+              )}
 
               <div className={`flex flex-col ${role === 'builder' ? 'md:flex-row md:gap-8' : 'gap-4'} items-center text-gray-600 text-sm`}>
                 <div className="flex items-center">
