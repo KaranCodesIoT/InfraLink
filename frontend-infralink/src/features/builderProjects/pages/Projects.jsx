@@ -30,7 +30,7 @@ export default function Projects() {
     try {
       setLoading(true);
       setError(null);
-      let query = `/builder-projects?builder=${user._id}&sort=${sort}`;
+      let query = `/builder-projects?sort=${sort}`;
       if (propertyType) query += `&propertyType=${propertyType}`;
       if (locationQuery) query += `&city=${encodeURIComponent(locationQuery)}`;
 
@@ -61,9 +61,9 @@ export default function Projects() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Building2 className="w-6 h-6 text-orange-600" />
-            <h1 className="text-3xl font-extrabold text-gray-900">My Projects</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900">Available Projects</h1>
           </div>
-          <p className="text-gray-500">Manage and view all your posted projects.</p>
+          <p className="text-gray-500">Explore real-time available projects and developments.</p>
         </div>
         <Link
           to={ROUTES.POST_BUILDER_PROJECT}
@@ -126,15 +126,17 @@ export default function Projects() {
       ) : projects.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-xl p-16 text-center">
           <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-gray-700 mb-2">No projects yet</h3>
-          <p className="text-gray-400 text-sm">You haven't posted any projects. Start by posting your first project!</p>
-          <Link
-            to={ROUTES.POST_BUILDER_PROJECT}
-            className="inline-flex items-center gap-2 mt-6 bg-orange-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-orange-700 transition text-sm"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Post New Project
-          </Link>
+          <h3 className="text-lg font-bold text-gray-700 mb-2">No projects found</h3>
+          <p className="text-gray-400 text-sm">There are no available projects right now. Please check back later!</p>
+          {user?.role === 'builder' && (
+            <Link
+              to={ROUTES.POST_BUILDER_PROJECT}
+              className="inline-flex items-center gap-2 mt-6 bg-orange-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-orange-700 transition text-sm"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Post New Project
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-10">

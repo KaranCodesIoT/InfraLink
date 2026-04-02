@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore, useAuthStore } from '../../../store/index.js';
+import useBuilderProjectStore from '../../../store/builderProject.store.js';
 import {
   Loader2, MapPin, User, Mail, ArrowLeft, Star, Briefcase,
   ShieldCheck, Pencil, Clock, Users, CheckCircle2,
-  MessageCircle, Building2, FolderOpen, Image as ImageIcon
+  MessageCircle, Building2, FolderOpen, Image as ImageIcon,
+  Activity
 } from 'lucide-react';
 import FollowButton from '../../network/components/FollowButton.jsx';
 import BlockButton from '../../network/components/BlockButton.jsx';
@@ -27,16 +29,21 @@ export default function BuilderProfile() {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
-  const [ratingLoading, setRatingLoading] = useState(false);
   const [canMessage, setCanMessage] = useState(false);
   const prevFollowStatusRef = useRef(null);
+  
+  const { projects: realTimeProjects, fetchProjects } = useBuilderProjectStore();
 
   useEffect(() => {
     getProfessionalById(id).catch(() => {
       toast.error('Failed to load builder profile');
     });
+    
+    // Fetch real-time available projects for this builder
+    fetchProjects({ builder: id, sort: '-createdAt' });
+
     return () => clearSelectedProfessional();
-  }, [id, getProfessionalById, clearSelectedProfessional, toast]);
+  }, [id, getProfessionalById, clearSelectedProfessional, fetchProjects, toast]);
 
   const isOwner = !!(currentUser?._id && selectedProfessional?._id &&
     currentUser._id.toString() === selectedProfessional._id.toString());
@@ -298,6 +305,59 @@ export default function BuilderProfile() {
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* Real Time Available Projects */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <div className="flex items-center gap-2 mb-6 text-orange-600">
+              <Activity className="w-5 h-5" />
+              <h3 className="text-lg font-bold uppercase tracking-wider">Real TIme Available Projects</h3>
+              <span className="ml-auto bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[10px] font-black uppercase">Active Now</span>
+            </div>
+
+            {isOwner && (
+                <button 
+                  onClick={() => navigate('/builder-projects/post')}
+                  className="w-full mb-6 bg-gray-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <Activity className="w-4 h-4" /> Post Real-Time Project
+                </button>
+            )}
+            
+            {realTimeProjects.length > 0 ? (
+              <div className="space-y-4">
+                {realTimeProjects.map((proj) => (
+                  <div key={proj._id} className="group flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-orange-200 transition-all cursor-pointer" onClick={() => navigate(`/builder-projects/${proj._id}`)}>
+                    <div className="w-16 h-16 rounded-xl bg-orange-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {proj.media?.length > 0 ? (
+                            <img src={proj.media[0].url} alt={proj.title} className="w-full h-full object-cover" />
+                        ) : (
+                            <Building2 className="w-6 h-6 text-orange-300" />
+                        )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-gray-900 truncate uppercase tracking-tight">{proj.title}</h4>
+                        <div className="flex items-center gap-3 mt-1">
+                            <span className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {new Date(proj.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {proj.location}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-black text-orange-600">₹{proj.budget?.toLocaleString() || 'N/A'}</span>
+                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Hiring</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                 <p className="text-gray-400 text-sm font-medium">No real-time projects listed by builder recently.</p>
+              </div>
+            )}
           </div>
 
           {/* Past Projects */}

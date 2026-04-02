@@ -2,6 +2,7 @@ import User from '../users/user.model.js';
 import BuilderProfile from '../builders/builderProfile.model.js';
 import ContractorProfile from '../contractors/contractorProfile.model.js';
 import WorkerProfile from '../workers/workerProfile.model.js';
+import SupplierProfile from '../suppliers/supplierProfile.model.js';
 import { buildPaginationMeta } from '../../utils/pagination.utils.js';
 import { ALL_ROLES } from '../../constants/roles.js';
 
@@ -109,6 +110,23 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
             } else {
                 prof.averageRating = 0;
             }
+        } else if (prof.role === 'supplier') {
+            const sp = await SupplierProfile.findOne({ user: prof._id })
+                .select('businessName categories verification reputation aiMetrics logistics')
+                .lean();
+            if (sp) {
+                prof.companyName = sp.businessName;
+                prof.skills = sp.categories || [];
+                prof.yearsOfExperience = sp.verification?.yearsOfExperience || 0;
+                // We use followersCount as a generic alias in the card, so let's use totalOrders for suppliers
+                prof.followersCount = sp.reputation?.totalOrders || 0; 
+                prof.averageRating = sp.reputation?.averageRating || 0;
+                prof.aiMetrics = sp.aiMetrics; // Used for algorithm sorting
+                prof.isVerified = sp.verification?.verifiedBadge || false;
+                prof.logistics = sp.logistics; // For 'Fast Delivery' badge check
+            } else {
+                prof.averageRating = 0;
+            }
         } else {
             prof.averageRating = 0;
         }
@@ -121,6 +139,15 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
         } else {
             processedProfessionals.push(prof);
         }
+    }
+
+    // AI Supplier Ranking Logic
+    if (role === 'supplier') {
+        processedProfessionals.sort((a, b) => {
+            const scoreA = (a.averageRating * 10) + (a.aiMetrics?.deliverySuccessRate || 0) + (a.aiMetrics?.reliabilityScore || 0);
+            const scoreB = (b.averageRating * 10) + (b.aiMetrics?.deliverySuccessRate || 0) + (b.aiMetrics?.reliabilityScore || 0);
+            return scoreB - scoreA; // descending
+        });
     }
 
     const total = processedProfessionals.length;
@@ -195,6 +222,20 @@ export const getProfessionalById = async (id, requesterUserId) => {
             } else {
                 user.isFollowing = false;
             }
+        }
+    } else if (user.role === 'supplier') {
+        const supplierProfile = await SupplierProfile.findOne({ user: id }).lean();
+        if (supplierProfile) {
+            user.supplierProfile = supplierProfile;
+            user.skills = supplierProfile.categories || [];
+            user.companyName = supplierProfile.businessName;
+            
+            user.followersCount = supplierProfile.reputation?.totalOrders || 0;
+            user.averageRating = supplierProfile.reputation?.averageRating || 0;
+            user.totalReviews = supplierProfile.reputation?.repeatClients || 0;
+            user.isVerified = supplierProfile.verification?.verifiedBadge || false;
+            
+            user.isFollowing = false;
         }
     }
 
