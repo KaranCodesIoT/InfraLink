@@ -28,6 +28,7 @@ const DIRECTORY_CARDS = [
   },
   {
     id: 'contractor',
+    path: '/directory/contractors',
     label: 'Contractors',
     description: 'Sub-contractors and specialized construction teams.',
     icon: Briefcase,
@@ -81,9 +82,13 @@ export default function WorkerDirectoryDashboard() {
     fetchDirectoryStats();
   }, [fetchDirectoryStats]);
 
-  const handleCardClick = (roleId) => {
-    if (!roleId) return; // Coming soon
-    navigate(`/directory/browse?role=${roleId}`);
+  const handleCardClick = (card) => {
+    if (!card.id) return; // Coming soon
+    if (card.path) {
+      navigate(card.path);
+    } else {
+      navigate(`/directory/browse?role=${card.id}`);
+    }
   };
 
   const totalProfessionals = Object.values(categoryStats).reduce((a, b) => a + b, 0);
@@ -116,7 +121,7 @@ export default function WorkerDirectoryDashboard() {
             return (
               <div
                 key={card.label}
-                onClick={() => handleCardClick(card.id)}
+              onClick={() => handleCardClick(card)}
                 className={`group relative bg-white rounded-2xl border-2 ${card.borderColor} shadow-sm overflow-hidden transition-all duration-200 ${
                   card.comingSoon
                     ? 'opacity-60 cursor-not-allowed'

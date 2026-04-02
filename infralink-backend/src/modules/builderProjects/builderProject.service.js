@@ -86,3 +86,48 @@ export const addUpdateToProject = async (id, builderId, data) => {
     }
     return project;
 };
+
+// ── Engagement helpers ────────────────────────────────────────────────
+
+export const toggleLikeProject = async (projectId, userId) => {
+    const project = await BuilderProject.findById(projectId);
+    if (!project) {
+        const err = new Error('Builder project not found');
+        err.statusCode = 404;
+        throw err;
+    }
+    const hasLiked = project.likes.some((id) => id.toString() === userId.toString());
+    if (hasLiked) {
+        project.likes.pull(userId);
+    } else {
+        project.likes.push(userId);
+    }
+    await project.save();
+    return { liked: !hasLiked, likeCount: project.likes.length };
+};
+
+export const addCommentToProject = async (projectId, userId, text) => {
+    const project = await BuilderProject.findById(projectId);
+    if (!project) {
+        const err = new Error('Builder project not found');
+        err.statusCode = 404;
+        throw err;
+    }
+    project.comments.push({ user: userId, text, createdAt: new Date() });
+    await project.save();
+    const updated = await BuilderProject.findById(projectId)
+        .populate('comments.user', 'name avatar role');
+    return updated.comments[updated.comments.length - 1];
+};
+
+export const getProjectComments = async (projectId) => {
+    const project = await BuilderProject.findById(projectId)
+        .populate('comments.user', 'name avatar role')
+        .select('comments');
+    if (!project) {
+        const err = new Error('Builder project not found');
+        err.statusCode = 404;
+        throw err;
+    }
+    return project.comments;
+};

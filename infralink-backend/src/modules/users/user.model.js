@@ -19,6 +19,15 @@ export const CONTRACTOR_TYPES = [
     'Demolition Contractor'
 ];
 
+export const PROFESSION_TYPES = [
+    'Architect',
+    'Civil Engineer',
+    'Structural Engineer',
+    'Electrical Engineer',
+    'Mechanical Engineer',
+    'Interior Designer'
+];
+
 const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
@@ -34,14 +43,37 @@ const userSchema = new mongoose.Schema(
                 return this.role === 'contractor';
             }
         },
+        professionType: {
+            type: String,
+            enum: PROFESSION_TYPES,
+            trim: true,
+            required: function () {
+                return this.role === 'architect';
+            }
+        },
         avatar: { type: String },
         isVerified: { type: Boolean, default: false },
         isActive: { type: Boolean, default: true },
         kycStatus: { type: String, enum: ['pending', 'submitted', 'approved', 'rejected'], default: 'pending' },
         kycDocuments: [{ type: String }],
+        kycDetails: {
+            aadhaarNumber: { type: String, trim: true },
+            panNumber: { type: String, trim: true },
+            gstin: { type: String, trim: true },
+            reraRegistrationNumber: { type: String, trim: true }
+        },
+        professionalDetails: {
+            pricing: {
+                amount: { type: Number },
+                type: { type: String, trim: true } // e.g., 'hourly', 'project'
+            },
+            skillLevel: { type: String, trim: true },
+            tools: [{ type: String, trim: true }]
+        },
         skills: [{ type: String, trim: true }],
         experience: { type: String, trim: true },
         bio: { type: String, trim: true },
+        averageRating: { type: Number, default: 0 },
         refreshToken: { type: String, select: false },
         lastLogin: { type: Date },
         location: {
@@ -54,6 +86,7 @@ const userSchema = new mongoose.Schema(
         followersCount: { type: Number, default: 0 },
         followingCount: { type: Number, default: 0 },
         isPrivate: { type: Boolean, default: false },
+        resume: { type: String },
     },
     { timestamps: true }
 );

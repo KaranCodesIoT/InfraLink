@@ -18,4 +18,9 @@ router.patch('/:id', authMiddleware, requireRole('builder'), validate(updateBuil
 router.post('/:id/updates', authMiddleware, requireRole('builder'), validate(addUpdateSchema), c.addUpdate);
 router.delete('/:id', authMiddleware, requireRole('builder'), c.remove);
 
+// Engagement
+router.post('/:id/like', authMiddleware, c.likeProject);
+router.get('/:id/comments', c.getComments);
+router.post('/:id/comments', authMiddleware, c.addComment);
+
 export default router;

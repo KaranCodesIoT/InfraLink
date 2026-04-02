@@ -90,6 +90,23 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  uploadResume: async (userId, file) => {
+    set({ isLoading: true, error: null });
+    try {
+      const formData = new FormData();
+      formData.append('resume', file);
+
+      await api.post(`/users/${userId}/resume`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const { data: me } = await api.get('/auth/me');
+      set({ user: me.data, isLoading: false });
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
   clearError: () => set({ error: null }),
 }));
 

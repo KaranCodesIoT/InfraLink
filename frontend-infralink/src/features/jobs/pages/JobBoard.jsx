@@ -62,12 +62,21 @@ export default function JobBoard() {
       </button>
 
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          <Briefcase className="w-6 h-6 text-orange-600" />
-          <h1 className="text-3xl font-extrabold text-gray-900">Available Jobs</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-8">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase className="w-6 h-6 text-orange-600" />
+            <h1 className="text-3xl font-extrabold text-gray-900">Available Jobs</h1>
+          </div>
+          <p className="text-gray-500">Browse construction jobs and projects across India.</p>
         </div>
-        <p className="text-gray-500">Browse construction jobs and projects across India.</p>
+        <Link
+          to={ROUTES.JOB_POST}
+          className="flex items-center gap-2 bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-md hover:bg-orange-700 transition whitespace-nowrap"
+        >
+          <PlusCircle className="w-5 h-5" />
+          Post a Job
+        </Link>
       </div>
 
       {/* Filters */}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Maximize2 } from 'lucide-react';
+import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Maximize2, MessageSquare } from 'lucide-react';
 import useAuthStore from '../../../store/auth.store';
+import { getOrCreateConversation } from '../../messaging/services/message.service.js';
 import useBuilderProjectStore from '../../../store/builderProject.store';
 import useUIStore from '../../../store/ui.store';
 
@@ -27,13 +28,20 @@ export default function BuilderProjectDetail() {
   // 3D/AR Modal
   const [showARModal, setShowARModal] = useState(false);
 
+  // Interest & Chat State
+  const [isInterested, setIsInterested] = useState(false);
+  const [isStartingChat, setIsStartingChat] = useState(false);
+
   useEffect(() => {
     if (id) {
       fetchProjectById(id).catch(() => {
         toast.error('Failed to load project details');
       });
+      if (user?._id) {
+        setIsInterested(localStorage.getItem(`interested_${user._id}_${id}`) === 'true');
+      }
     }
-  }, [id, fetchProjectById, toast]);
+  }, [id, fetchProjectById, toast, user]);
 
   if (isLoading || !currentProject) {
     return (
@@ -45,6 +53,45 @@ export default function BuilderProjectDetail() {
 
   const project = currentProject;
   const isOwner = user?._id === project.builder?._id || user?._id === project.builder;
+
+  // --- Interest Logic ---
+  const handleInterestClick = () => {
+    if (!user) {
+      toast.error('Please log in to submit your interest.');
+      return;
+    }
+    localStorage.setItem(`interested_${user._id}_${id}`, 'true');
+    setIsInterested(true);
+    toast.success('Interest submitted successfully!');
+  };
+
+  // --- Message Logic ---
+  const handleMessageClick = async () => {
+    if (!user) {
+      toast.error('Please log in to send a message.');
+      return;
+    }
+    const builderId = typeof project.builder === 'string' ? project.builder : project.builder?._id;
+    if (user._id === builderId) {
+      toast.info('You are the owner of this project.');
+      return;
+    }
+    try {
+      setIsStartingChat(true);
+      const { data } = await getOrCreateConversation({
+        recipientId: builderId,
+        projectContext: {
+          name: project.projectName,
+          location: project.city
+        }
+      });
+      navigate(`/messages/${data.data._id}`);
+    } catch (error) {
+      toast.error('Failed to start conversation. The builder might have messaging disabled or a network error occurred.');
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
 
   // --- Image Replace Logic ---
   const handleImageReplace = async (e) => {
@@ -282,6 +329,30 @@ export default function BuilderProjectDetail() {
               {project.possessionDate ? new Date(project.possessionDate).getFullYear() : 'Ongoing'}
             </span>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="p-6 md:p-8 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center justify-center gap-4">
+          <button
+            onClick={handleInterestClick}
+            disabled={isInterested}
+            className={`px-8 py-3.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 flex-1 max-w-[280px] ${
+              isInterested 
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none' 
+                : 'bg-orange-600 text-white hover:bg-orange-700 hover:-translate-y-0.5 shadow-orange-200'
+            }`}
+          >
+            {isInterested ? 'Already Interested' : "I'm Interested to Buy"}
+          </button>
+          
+          <button
+            onClick={handleMessageClick}
+            disabled={isStartingChat}
+            className="px-8 py-3.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 flex-1 max-w-[280px] bg-white border-2 border-orange-600 text-orange-600 hover:bg-orange-50 hover:-translate-y-0.5"
+          >
+            {isStartingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+            Message
+          </button>
         </div>
       </div>
 

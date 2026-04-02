@@ -3,8 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, LayoutDashboard, Briefcase, MessageSquare, Bell,
   User, Settings, LogOut, Menu, X, Search, ChevronDown,
-  Wrench, Package, Cpu, Star, ShoppingBag, FolderOpen,
-  CreditCard, Bot, Users, BarChart2, PlusCircle, Heart
+  Star, FolderOpen, CreditCard, Bot, Users, BarChart2, PlusCircle, Heart
 } from 'lucide-react';
 import { ROUTES } from '../constants/routes.js';
 import useAuth from '../hooks/useAuth.js';
@@ -19,10 +18,6 @@ const NAV_ITEMS = [
   { label: 'Projects', icon: FolderOpen, path: ROUTES.PROJECTS, roles: '*' },
   { label: 'Post Project', icon: PlusCircle, path: ROUTES.POST_BUILDER_PROJECT, roles: [ROLES.BUILDER] },
   { label: 'Messages', icon: MessageSquare, path: ROUTES.MESSAGES, roles: '*' },
-  { label: 'Workers', icon: Users, path: ROUTES.WORKERS, roles: [ROLES.BUILDER, ROLES.CONTRACTOR, ROLES.NORMAL_USER, ROLES.CLIENT, ROLES.ADMIN] },
-  { label: 'Marketplace', icon: ShoppingBag, path: ROUTES.MARKETPLACE, roles: '*' },
-  { label: 'Equipment', icon: Cpu, path: ROUTES.EQUIPMENT, roles: '*' },
-  { label: 'Services', icon: Wrench, path: ROUTES.SERVICES, roles: '*' },
   { label: 'Payments', icon: CreditCard, path: ROUTES.PAYMENTS, roles: '*' },
   { label: 'Reviews', icon: Star, path: ROUTES.REVIEWS, roles: '*' },
   { label: 'Favorites', icon: Heart, path: ROUTES.FAVORITES, roles: '*' },
@@ -38,6 +33,9 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const POST_ROLES = ['contractor', 'builder', 'engineer', 'architect'];
+  const canPost = POST_ROLES.includes(role);
 
   const handleLogout = async () => {
     await logout();
@@ -108,6 +106,8 @@ export default function DashboardLayout() {
           </button>
 
           <div className="flex items-center gap-3">
+
+
             {/* Notifications */}
             <Link
               to={ROUTES.NOTIFICATIONS}
@@ -172,6 +172,7 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+
     </div>
   );
 }

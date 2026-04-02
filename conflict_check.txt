@@ -1,0 +1,9 @@
+warning: in the working copy of 'frontend-infralink/src/features/builderProjects/components/BuilderProjectCard.jsx', LF will be replaced by CRLF the next time Git touches it
+frontend-infralink/src/features/builderProjects/components/BuilderProjectCard.jsx:147: trailing whitespace.
++                <button 
+frontend-infralink/src/features/builderProjects/pages/BuilderProjectDetail.jsx:340: trailing whitespace.
++              isInterested 
+frontend-infralink/src/features/builderProjects/pages/BuilderProjectDetail.jsx:341: trailing whitespace.
++                ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none' 
+frontend-infralink/src/features/builderProjects/pages/BuilderProjectDetail.jsx:347: trailing whitespace.
++          
