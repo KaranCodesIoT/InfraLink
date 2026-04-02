@@ -48,6 +48,8 @@ import networkRoutes from './modules/network/network.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
 import builderProjectRoutes from './modules/builderProjects/builderProject.routes.js';
 
+import supplierRoutes from './modules/suppliers/supplier.routes.js';
+
 const app = express();
 
 // Security
@@ -104,6 +106,7 @@ app.use(`${V1}/ai`, aiRoutes);
 app.use(`${V1}/directory`, directoryRoutes);
 app.use(`${V1}/builders`, builderRoutes);
 app.use(`${V1}/contractors`, contractorRoutes);
+app.use(`${V1}/suppliers`, supplierRoutes);
 app.use(`${V1}/network`, networkRoutes);
 app.use(`${V1}/upload`, uploadRoutes);
 app.use(`${V1}/builder-projects`, builderProjectRoutes);

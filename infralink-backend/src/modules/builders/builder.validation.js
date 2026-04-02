@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 export const step1Validation = Joi.object({
     companyName: Joi.string().trim().max(100).allow('', null),
-    profileType: Joi.string().valid('Individual Contractor', 'Builder Company', 'Freelancer').required(),
+    profileType: Joi.string().valid('Individual Contractor', 'Builder Company', 'Freelancer', 'Builder').required(),
     officeAddress: Joi.string().trim().required(),
     serviceAreas: Joi.array().items(Joi.string().trim()).min(1).required(),
     yearsOfExperience: Joi.number().min(0).max(100).required()

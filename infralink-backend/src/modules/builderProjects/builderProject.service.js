@@ -13,6 +13,10 @@ export const listBuilderProjects = async (query = {}) => {
     if (query.city) filter.city = new RegExp(query.city, 'i');
     if (query.propertyType) filter.propertyType = query.propertyType;
     if (query.builder) filter.builder = query.builder;
+    
+    if (query.search) {
+        filter.projectName = new RegExp(query.search, 'i');
+    }
 
     const [projects, total] = await Promise.all([
         BuilderProject.find(filter)
@@ -63,16 +67,6 @@ export const updateBuilderProject = async (id, builderId, data) => {
     return project;
 };
 
-export const deleteBuilderProject = async (id, builderId) => {
-    const project = await BuilderProject.findOneAndDelete({ _id: id, builder: builderId });
-    if (!project) {
-        const err = new Error('Builder project not found or unauthorized');
-        err.statusCode = 404;
-        throw err;
-    }
-    return project;
-};
-
 export const addUpdateToProject = async (id, builderId, data) => {
     const project = await BuilderProject.findOneAndUpdate(
         { _id: id, builder: builderId },
@@ -84,5 +78,32 @@ export const addUpdateToProject = async (id, builderId, data) => {
         err.statusCode = 404;
         throw err;
     }
+    return project;
+};
+
+export const deleteBuilderProject = async (id, builderId, reason) => {
+    const project = await BuilderProject.findOne({ _id: id, builder: builderId });
+    if (!project) {
+        const err = new Error('Builder project not found or unauthorized');
+        err.statusCode = 404;
+        throw err;
+    }
+
+    if (project.projectStatus === 'Completed' || project.projectStatus === 'Ready to Move') {
+        const err = new Error('Cannot delete a completed project');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    if (!reason) {
+        const err = new Error('Deletion reason is required');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    // Log the deletion reason for administrative review (optional)
+    console.log(`[Project Deletion] Project ${id} deleted by Builder ${builderId}. Reason: ${reason}`);
+
+    await BuilderProject.findByIdAndDelete(id);
     return project;
 };
