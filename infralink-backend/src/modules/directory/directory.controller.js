@@ -5,13 +5,14 @@ import * as followService from '../network/services/follow.service.js';
 
 export const getProfessionals = async (req, res, next) => {
     try {
-        const { role, page = 1, limit = 10, search, rating } = req.query;
+        const { role, page = 1, limit = 10, search, location, rating } = req.query;
         const { professionals, pagination } = await directoryService.findProfessionals({
             role,
             page: parseInt(page, 10),
             limit: parseInt(limit, 10),
             search,
-            rating: rating ? Number(rating) : undefined,
+            location,
+            rating: rating ? parseFloat(rating) : undefined
         });
         
         return sendPaginatedSuccess(res, professionals, pagination);
