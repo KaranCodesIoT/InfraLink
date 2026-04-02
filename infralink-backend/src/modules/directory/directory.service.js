@@ -8,12 +8,14 @@ import { ALL_ROLES } from '../../constants/roles.js';
 /**
  * Find professionals based on query parameters
  */
-export const findProfessionals = async ({ role, page, limit, search }) => {
+export const findProfessionals = async ({ role, page, limit, search, location, rating }) => {
     const filter = { 
         isActive: true,
         // Hide users who aren't construction professionals
         role: { $nin: ['unassigned', 'normal_user', 'client', 'admin'] },
     };
+
+    const andConditions = [];
 
     // Filter by role if provided and valid
     if (role && ALL_ROLES.includes(role)) {
@@ -22,11 +24,40 @@ export const findProfessionals = async ({ role, page, limit, search }) => {
 
     // Basic search by name or skills
     if (search) {
-        filter.$or = [
-            { name: { $regex: search, $options: 'i' } },
-            // If you add a 'skills' or 'specialization' field to the User model later, you can add it here
-            // { skills: { $regex: search, $options: 'i' } }
+        andConditions.push({
+            $or: [
+                { name: { $regex: search, $options: 'i' } }
+            ]
+        });
+    }
+
+    if (location) {
+        andConditions.push({
+            $or: [
+                { 'location.city': { $regex: location, $options: 'i' } },
+                { 'location.state': { $regex: location, $options: 'i' } },
+                { 'location.address': { $regex: location, $options: 'i' } }
+            ]
+        });
+    }
+
+    if (rating) {
+        const minRating = parseFloat(rating);
+        const [builders, contractors, workers] = await Promise.all([
+            BuilderProfile.find({ averageRating: { $gte: minRating } }).select('user').lean(),
+            ContractorProfile.find({ averageRating: { $gte: minRating } }).select('user').lean(),
+            WorkerProfile.find({ averageRating: { $gte: minRating } }).select('user').lean()
+        ]);
+        const ratedUserIds = [
+            ...builders.map(p => p.user),
+            ...contractors.map(p => p.user),
+            ...workers.map(p => p.user)
         ];
+        andConditions.push({ _id: { $in: ratedUserIds } });
+    }
+
+    if (andConditions.length > 0) {
+        filter.$and = andConditions;
     }
 
     const skip = (page - 1) * limit;

@@ -30,7 +30,7 @@ const assistantContextSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-assistantContextSchema.index({ user: 1 }, { unique: true });
+
 
 const AssistantContext = mongoose.model('AssistantContext', assistantContextSchema);
 export default AssistantContext;

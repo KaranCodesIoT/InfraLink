@@ -38,6 +38,8 @@ import BuilderProjectDetail from '../features/builderProjects/pages/BuilderProje
 import FavoriteProjects from '../features/builderProjects/pages/FavoriteProjects.jsx';
 import Projects from '../features/builderProjects/pages/Projects.jsx';
 import ARViewer from '../features/builderProjects/pages/ARViewer.jsx';
+import Payments from '../features/payments/pages/Payments.jsx';
+import AssistantPage from '../features/ai/pages/AssistantPage.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -86,6 +88,8 @@ const router = createBrowserRouter([
           { path: ROUTES.POST_BUILDER_PROJECT, element: <PostBuilderProject /> },
           { path: '/builder-projects/:id', element: <BuilderProjectDetail /> },
           { path: ROUTES.FAVORITES, element: <FavoriteProjects /> },
+          { path: ROUTES.PAYMENTS, element: <Payments /> },
+          { path: ROUTES.AI_ASSISTANT, element: <AssistantPage /> },
 
 
           // Role specific routes

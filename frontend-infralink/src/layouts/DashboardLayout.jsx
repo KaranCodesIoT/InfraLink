@@ -52,14 +52,14 @@ export default function DashboardLayout() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-gray-900 text-white flex flex-col transition-all duration-300 ease-in-out shrink-0 flex-shrink-0`}
+        className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-200 text-gray-800 flex flex-col transition-all duration-300 ease-in-out shrink-0 flex-shrink-0`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 h-16 px-4 border-b border-gray-700">
+        <div className="flex items-center gap-3 h-16 px-4 border-b border-gray-200">
           <div className="bg-orange-600 p-2 rounded-lg flex-shrink-0">
             <Building2 className="w-5 h-5 text-white" />
           </div>
-          {sidebarOpen && <span className="text-lg font-bold text-white">InfraLink</span>}
+          {sidebarOpen && <span className="text-lg font-bold text-gray-900">InfraLink</span>}
         </div>
 
         {/* Navigation */}
@@ -73,8 +73,8 @@ export default function DashboardLayout() {
                 title={!sidebarOpen ? item.label : undefined}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-orange-600 text-white'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    ? 'bg-orange-50 text-orange-600'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -88,7 +88,7 @@ export default function DashboardLayout() {
         {sidebarOpen && (
           <Link
             to={ROUTES.SEARCH}
-            className="mx-2 mb-2 flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg text-gray-400 text-sm hover:bg-gray-700 transition-colors"
+            className="mx-4 mb-4 flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-lg text-gray-500 text-sm hover:bg-gray-100 hover:text-gray-800 transition-colors shadow-sm"
           >
             <Search className="w-4 h-4" />
             <span>Search...</span>

@@ -15,6 +15,6 @@ export function resolveAvatarUrl(url) {
         return url;
     }
     // Relative URL like /uploads/avatars/xxx.jpg → prepend backend base
-    const backendBase = ENV.SOCKET_URL || 'http://localhost:5000';
+    const backendBase = ENV.SOCKET_URL || 'http://localhost:5001';
     return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
 }

@@ -20,6 +20,10 @@ import {
 } from './ai.validation.js';
 
 const router = Router();
+
+// Unauthenticated proxy (required for Audio tags which don't easily support X-Auth-Token)
+router.get('/voice/tts-proxy', voiceCtrl.proxyTTS);
+
 router.use(authMiddleware);
 
 // ─── Chatbot ──────────────────────────────────────────────────────────────────
@@ -30,8 +34,10 @@ router.post('/chatbot/sessions/:sessionId/message', validate(chatSchema), chatbo
 router.delete('/chatbot/sessions/:sessionId', chatbotCtrl.deleteSession);
 
 // ─── Personal Assistant ───────────────────────────────────────────────────────
+router.post('/assistant/ask-infralink', validate(askAssistantSchema), assistantCtrl.askInfralink);
 router.post('/assistant/ask', validate(askAssistantSchema), assistantCtrl.ask);
 router.get('/assistant/context', assistantCtrl.getContext);
+router.get('/assistant/history', assistantCtrl.getHistory);
 router.patch('/assistant/memory', validate(updateMemorySchema), assistantCtrl.updateMemory);
 router.delete('/assistant/history', assistantCtrl.clearHistory);
 

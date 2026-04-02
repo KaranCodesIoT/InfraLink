@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Send, Paperclip, Image, FileText, X, Loader2, Video } from 'lucide-react';
+import VoiceRecorder from './VoiceRecorder.jsx';
 
 export default function MessageInput({ onSend, disabled, placeholder }) {
     const [text, setText] = useState('');
@@ -9,6 +10,18 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
     const inputRef = useRef(null);
 
     const [isSending, setIsSending] = useState(false);
+    const [isVoiceRecording, setIsVoiceRecording] = useState(false);
+
+    // Called by VoiceRecorder when transcription is complete
+    const handleVoiceTranscript = useCallback((transcribedText) => {
+        setText((prev) => {
+            const separator = prev.trim() ? ' ' : '';
+            return prev + separator + transcribedText;
+        });
+        setIsVoiceRecording(false);
+        // Focus the text input after inserting
+        setTimeout(() => inputRef.current?.focus(), 100);
+    }, []);
 
     const handleSend = async () => {
         const trimmed = text.trim();
@@ -89,7 +102,7 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
                 <div className="relative">
                     <button
                         onClick={() => setShowAttachMenu(!showAttachMenu)}
-                        disabled={disabled}
+                        disabled={disabled || isVoiceRecording}
                         className="p-2.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-colors disabled:opacity-40"
                     >
                         <Paperclip className="w-5 h-5" />
@@ -128,23 +141,41 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
                     <input ref={fileRef} type="file" onChange={handleFileSelect} className="hidden" multiple />
                 </div>
 
-                {/* Text input */}
-                <textarea
-                    ref={inputRef}
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={disabled}
-                    placeholder={placeholder || 'Type a message...'}
-                    rows={1}
-                    className="flex-1 resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-400 disabled:bg-gray-50 disabled:text-gray-400 transition-all max-h-32"
-                    style={{ minHeight: '42px' }}
-                />
+                {/* Text input OR Voice Recording UI */}
+                {isVoiceRecording ? (
+                    <div className="flex-1">
+                        <VoiceRecorder
+                            onTranscript={handleVoiceTranscript}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : (
+                    <textarea
+                        ref={inputRef}
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={disabled}
+                        placeholder={placeholder || 'Type a message...'}
+                        rows={1}
+                        className="flex-1 resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-400 disabled:bg-gray-50 disabled:text-gray-400 transition-all max-h-32"
+                        style={{ minHeight: '42px' }}
+                    />
+                )}
+
+                {/* Voice Recorder (language selector + mic button) — only when NOT recording */}
+                {!isVoiceRecording && (
+                    <VoiceRecorder
+                        onTranscript={handleVoiceTranscript}
+                        disabled={disabled}
+                        onRecordingStart={() => setIsVoiceRecording(true)}
+                    />
+                )}
 
                 {/* Send button */}
                 <button
                     onClick={handleSend}
-                    disabled={disabled || isSending || (!text.trim() && attachments.length === 0)}
+                    disabled={disabled || isSending || isVoiceRecording || (!text.trim() && attachments.length === 0)}
                     className="p-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                 >
                     {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}

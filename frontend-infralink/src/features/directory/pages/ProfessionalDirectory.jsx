@@ -1,45 +1,39 @@
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore } from '../../../store/index.js';
 import ProfessionalCard from '../components/ProfessionalCard.jsx';
-import { Loader2, Users, Search, Filter } from 'lucide-react';
+import { Loader2, Users, Search, MapPin, Star } from 'lucide-react';
 import { ROLES } from '../../../constants/roles.js';
-
-const ROLE_TABS = [
-  { label: 'All', value: '' },
-  { label: 'Builders & Developers', value: ROLES.BUILDER },
-  { label: 'Architects', value: ROLES.ARCHITECT },
-  { label: 'Contractors', value: ROLES.CONTRACTOR },
-  { label: 'Labour', value: ROLES.LABOUR },
-  { label: 'Suppliers', value: ROLES.SUPPLIER },
-];
 
 export default function ProfessionalDirectory() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentRole = searchParams.get('role') || '';
+  const navigate = useNavigate();
+
+  // If no role specified, default to builder since other roles were removed
+  const currentRole = searchParams.get('role') || 'builder';
   const searchQuery = searchParams.get('q') || '';
+  const locationQuery = searchParams.get('location') || '';
+  const ratingQuery = searchParams.get('rating') || '';
 
   const { professionals, fetchProfessionals, isLoading, error } = useDirectoryStore();
   const { toast } = useUIStore();
 
   useEffect(() => {
-    fetchProfessionals({ role: currentRole, search: searchQuery }).catch(err => {
+    fetchProfessionals({ 
+      role: currentRole, 
+      search: searchQuery,
+      location: locationQuery,
+      rating: ratingQuery
+    }).catch(err => {
+      console.error(err);
       toast.error('Failed to load professionals');
     });
-  }, [currentRole, searchQuery, fetchProfessionals, toast]);
+  }, [currentRole, searchQuery, locationQuery, ratingQuery, fetchProfessionals, toast]);
 
-  const handleRoleChange = (role) => {
+  const updateParam = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
-    if (role) newParams.set('role', role);
-    else newParams.delete('role');
-    setSearchParams(newParams);
-  };
-
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    const newParams = new URLSearchParams(searchParams);
-    if (value) newParams.set('q', value);
-    else newParams.delete('q');
+    if (value) newParams.set(key, value);
+    else newParams.delete(key);
     setSearchParams(newParams);
   };
 
@@ -51,49 +45,85 @@ export default function ProfessionalDirectory() {
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between">
-        <div className="flex items-center space-x-1 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-          {ROLE_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => handleRoleChange(tab.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                currentRole === tab.value
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-8 space-y-5">
+        
+        {/* Top Row: Tabs */}
+        <div className="flex items-center space-x-2 border-b border-gray-100 pb-4">
+          <button
+            onClick={() => updateParam('role', 'builder')}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              currentRole === 'builder'
+                ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Builders & Developers
+          </button>
+          <button
+            onClick={() => navigate('/projects')}
+            className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-gray-600 hover:bg-gray-100"
+          >
+            Projects
+          </button>
         </div>
 
-        <div className="relative md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name or skill..."
-            value={searchQuery}
-            onChange={handleSearch}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          />
+        {/* Bottom Row: Search Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => updateParam('q', e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm transition-all"
+            />
+          </div>
+
+          <div className="relative">
+            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by location..."
+              value={locationQuery}
+              onChange={(e) => updateParam('location', e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm transition-all"
+            />
+          </div>
+
+          <div className="relative">
+            <Star className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              value={ratingQuery}
+              onChange={(e) => updateParam('rating', e.target.value)}
+              className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm appearance-none bg-white transition-all cursor-pointer"
+            >
+              <option value="">Any Rating</option>
+              <option value="4.5">4.5+ Stars</option>
+              <option value="4.0">4.0+ Stars</option>
+              <option value="3.5">3.5+ Stars</option>
+              <option value="3.0">3.0+ Stars</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 text-orange-600 animate-spin" />
-          <p className="text-gray-500 mt-4">Finding professionals...</p>
+          <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+          <p className="text-gray-500 mt-4 font-medium">Finding professionals...</p>
         </div>
       ) : error ? (
-        <div className="bg-red-50 p-4 rounded-lg text-red-700 text-center">
+        <div className="bg-red-50 p-4 rounded-xl text-red-700 text-center border border-red-100 font-medium">
           {error}
         </div>
       ) : professionals.length === 0 ? (
-        <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-          <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">No professionals found</h3>
-          <p className="text-gray-500 mt-1">Try adjusting your filters or search query.</p>
+        <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">No professionals found</h3>
+          <p className="text-gray-500 mt-2 max-w-sm mx-auto">We couldn't find anyone matching your current filters. Try adjusting your search query, location, or rating.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
