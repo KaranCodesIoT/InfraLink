@@ -1,8 +1,13 @@
 import Post from './post.model.js';
+import User from '../users/user.model.js';
 
 export const createPost = async (userId, data) => {
+    // Fetch requester role for denormalization
+    const user = await User.findById(userId).select('role').lean();
+    
     const post = new Post({
         user: userId,
+        role: user?.role || 'unassigned',
         content: data.content,
         image: data.image || null,
         projectName: data.projectName || null,

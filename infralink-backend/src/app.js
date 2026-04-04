@@ -48,6 +48,7 @@ import networkRoutes from './modules/network/network.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
 import builderProjectRoutes from './modules/builderProjects/builderProject.routes.js';
 import postRoutes from './modules/posts/post.routes.js';
+import feedRoutes from './modules/feed/feed.routes.js';
 
 const app = express();
 
@@ -109,6 +110,7 @@ app.use(`${V1}/network`, networkRoutes);
 app.use(`${V1}/upload`, uploadRoutes);
 app.use(`${V1}/builder-projects`, builderProjectRoutes);
 app.use(`${V1}/posts`, postRoutes);
+app.use(`${V1}/feed`, feedRoutes);
 
 // Root Route (Welcome)
 app.get('/', (req, res) => {

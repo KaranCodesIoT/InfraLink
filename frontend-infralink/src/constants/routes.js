@@ -10,6 +10,7 @@ export const ROUTES = {
 
   // Dashboard (role-aware)
   DASHBOARD: '/dashboard',
+  FEED: '/feed',
 
   // Jobs
   JOBS: '/jobs',

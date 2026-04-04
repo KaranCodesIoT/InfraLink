@@ -1,6 +1,4 @@
-import React from 'react';
 import { XCircle, CheckCircle, Clock, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
 
 export default function WorkerAssignmentList({ assignments = [], isOwner, onRemoveWorker }) {
   if (!assignments.length) {
@@ -50,7 +48,7 @@ export default function WorkerAssignmentList({ assignments = [], isOwner, onRemo
             />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-900">{assignment.user?.name || 'Unknown Worker'}</p>
-              <p className="text-xs text-gray-500">Assigned {format(new Date(assignment.assignedAt), 'MMM d, yyyy')}</p>
+              <p className="text-xs text-gray-500">Assigned {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(assignment.assignedAt))}</p>
             </div>
           </div>
           

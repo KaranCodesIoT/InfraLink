@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, LayoutDashboard, Briefcase, MessageSquare, Bell,
   User, Settings, LogOut, Menu, X, Search, ChevronDown,
-  Star, FolderOpen, CreditCard, Bot, Users, BarChart2, PlusCircle, Heart
+  Star, FolderOpen, CreditCard, Bot, Users, BarChart2, PlusCircle, Heart, Newspaper
 } from 'lucide-react';
 import { ROUTES } from '../constants/routes.js';
 import useAuth from '../hooks/useAuth.js';
@@ -13,6 +13,7 @@ import { ROLES } from '../constants/roles.js';
 import { resolveAvatarUrl } from '../utils/avatarUrl.js';
 
 const NAV_ITEMS = [
+  { label: 'Feed', icon: Newspaper, path: ROUTES.FEED, roles: '*' },
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD, roles: '*' },
   { label: 'Jobs', icon: Briefcase, path: ROUTES.JOBS, roles: '*' },
   { label: 'Projects', icon: FolderOpen, path: ROUTES.PROJECTS, roles: '*' },

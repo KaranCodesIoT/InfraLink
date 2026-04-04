@@ -41,6 +41,7 @@ import Projects from '../features/builderProjects/pages/Projects.jsx';
 import ARViewer from '../features/builderProjects/pages/ARViewer.jsx';
 import Payments from '../features/payments/pages/Payments.jsx';
 import AssistantPage from '../features/ai/pages/AssistantPage.jsx';
+import Feed from '../features/feed/pages/Feed.jsx';
 
 // Route chunks
 import clientRoutes from './client.routes.jsx';
@@ -92,6 +93,7 @@ const router = createBrowserRouter([
           { path: ROUTES.FAVORITES, element: <FavoriteProjects /> },
           { path: ROUTES.PAYMENTS, element: <Payments /> },
           { path: ROUTES.AI_ASSISTANT, element: <AssistantPage /> },
+          { path: ROUTES.FEED, element: <Feed /> },
 
 
           // Role specific routes

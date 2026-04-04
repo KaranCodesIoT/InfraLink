@@ -7,6 +7,11 @@ const postSchema = new mongoose.Schema({
     required: [true, 'User ID is required'],
     index: true
   },
+  role: {
+    type: String,
+    index: true,
+    default: 'unassigned' // Denormalized from user's role for fast ranking
+  },
   content: {
     type: String,
     required: [true, 'Post content is required'],
@@ -16,6 +21,15 @@ const postSchema = new mongoose.Schema({
   image: {
     type: String, // URL from cloudinary/upload
     default: null
+  },
+  video: {
+    type: String, // URL from cloudinary/upload for video posts
+    default: null
+  },
+  contentType: {
+    type: String,
+    enum: ['text', 'image', 'video', 'project_update'],
+    default: 'text'
   },
   projectName: {
     type: String,
@@ -51,6 +65,10 @@ const postSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Optimization for feed sorting and role-based / user-specific filtering
+postSchema.index({ createdAt: -1 });
+postSchema.index({ user: 1, createdAt: -1 });
 
 const Post = mongoose.model('Post', postSchema);
 export default Post;

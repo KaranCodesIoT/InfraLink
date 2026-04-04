@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { X, ImagePlus, Loader2, Send } from 'lucide-react';
 import usePostsStore from '../../../store/posts.store.js';
+import useFeedStore from '../../../store/feed.store.js';
 import useUIStore from '../../../store/ui.store.js';
 
 export default function PostFormModal({ isOpen, onClose }) {
@@ -37,6 +38,7 @@ export default function PostFormModal({ isOpen, onClose }) {
 
     try {
       await createPost(formData);
+      useFeedStore.getState().refreshFeed(); // Refresh feed after posting
       toast.success('Post created successfully!');
       setContent('');
       removeImage();
