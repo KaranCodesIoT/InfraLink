@@ -8,7 +8,7 @@ const builderProfileSchema = new mongoose.Schema(
         companyName: { type: String, trim: true }, // Optional if Individual
         profileType: { 
             type: String, 
-            enum: ['Individual Contractor', 'Builder Company', 'Freelancer'], 
+            enum: ['Individual Contractor', 'Builder Company', 'Freelancer', 'Builder'], 
             required: true 
         },
         officeAddress: { type: String, trim: true },

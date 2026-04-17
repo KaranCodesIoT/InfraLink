@@ -14,6 +14,10 @@ export const listBuilderProjects = async (query = {}) => {
     if (query.city) filter.city = new RegExp(query.city, 'i');
     if (query.propertyType) filter.propertyType = query.propertyType;
     if (query.builder) filter.builder = query.builder;
+    
+    if (query.search) {
+        filter.projectName = new RegExp(query.search, 'i');
+    }
 
     const [projects, total] = await Promise.all([
         BuilderProject.find(filter)
@@ -56,16 +60,6 @@ export const updateBuilderProject = async (id, builderId, data) => {
         data,
         { new: true, runValidators: true }
     );
-    if (!project) {
-        const err = new Error('Builder project not found or unauthorized');
-        err.statusCode = 404;
-        throw err;
-    }
-    return project;
-};
-
-export const deleteBuilderProject = async (id, builderId) => {
-    const project = await BuilderProject.findOneAndDelete({ _id: id, builder: builderId });
     if (!project) {
         const err = new Error('Builder project not found or unauthorized');
         err.statusCode = 404;

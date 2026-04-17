@@ -42,7 +42,8 @@ export const update = async (req, res, next) => {
 
 export const remove = async (req, res, next) => {
     try {
-        await service.deleteBuilderProject(req.params.id, req.user._id);
+        const { reason } = req.body;
+        await service.deleteBuilderProject(req.params.id, req.user._id, reason);
         sendSuccess(res, null, 'Deleted');
     } catch (e) { next(e); }
 };

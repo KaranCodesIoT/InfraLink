@@ -193,6 +193,90 @@ const useDirectoryStore = create((set, get) => ({
     }
   },
 
+  rateSupplier: async (supplierProfileId, value, review) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Note: We'll use the generic rate endpoint if possible, but for now specific one
+      const { data } = await api.post(`/suppliers/${supplierProfileId}/rate`, { value, review });
+      set((state) => {
+        if (state.selectedProfessional && (state.selectedProfessional.supplierProfile?._id === supplierProfileId || state.selectedProfessional._id === supplierProfileId)) {
+          return {
+            selectedProfessional: {
+              ...state.selectedProfessional,
+              averageRating: data.data.averageRating,
+              totalReviews: data.data.totalReviews
+            },
+            isLoading: false
+          };
+        }
+        return { isLoading: false };
+      });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  requestSupplierQuote: async (supplierId, message, products) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post(`/suppliers/${supplierId}/quote`, { message, products });
+      set({ isLoading: false });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  addSupplierProduct: async (productData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post('/suppliers/products', productData);
+      set({ isLoading: false });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  postMaterial: async (materialData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post('/marketplace', materialData);
+      set({ isLoading: false });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  updateSupplierMaterial: async (id, materialData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.put(`/marketplace/${id}`, materialData);
+      set({ isLoading: false });
+      return data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  deleteSupplierMaterial: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.delete(`/marketplace/${id}`);
+      set({ isLoading: false });
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
   clearSelectedProfessional: () => set({ selectedProfessional: null }),
   clearError: () => set({ error: null }),
 }));

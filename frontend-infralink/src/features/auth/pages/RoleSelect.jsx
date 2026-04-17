@@ -102,8 +102,14 @@ export default function RoleSelect() {
         // Individuals skip profile form — go straight to dashboard
         toast.success('Welcome to InfraLink!');
         navigate(ROUTES.DASHBOARD);
+      } else if (selectedRole === 'builder') {
+        navigate('/builder-onboarding');
+      } else if (selectedRole === 'contractor') {
+        navigate('/contractor-onboarding');
+      } else if (selectedRole === 'supplier') {
+        navigate('/supplier-onboarding');
       } else {
-        // All other professional roles → complete their profile first
+        // All other remaining roles → complete generic profile
         navigate('/complete-profile');
       }
     } catch {

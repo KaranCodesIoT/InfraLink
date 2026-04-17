@@ -27,6 +27,7 @@ import WorkerDirectoryDashboard from '../features/directory/pages/WorkerDirector
 import CompleteProfile from '../features/auth/pages/CompleteProfile.jsx';
 import BuilderOnboarding from '../features/builders/pages/BuilderOnboarding.jsx';
 import ContractorOnboarding from '../features/contractors/pages/ContractorOnboarding.jsx';
+import SupplierOnboarding from '../features/suppliers/pages/SupplierOnboarding.jsx';
 import ContractorProfile from '../features/directory/pages/ContractorProfile.jsx';
 import ContractorDirectory from '../features/directory/pages/ContractorDirectory.jsx';
 import Messages from '../features/messaging/pages/Messages.jsx';
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
           { path: ROUTES.DIRECTORY_DETAIL, element: <ProfessionalProfile /> },
           { path: '/directory/contractors', element: <ContractorDirectory /> },
           { path: '/directory/contractor/:id', element: <ContractorProfile /> },
+          { path: '/directory/supplier/:id', element: <SupplierProfile /> },
+          { path: ROUTES.MARKETPLACE, element: <ProfessionalDirectory /> },
+          { path: '/directory/builders', element: <BuilderDirectory /> },
+          { path: '/directory/builder/:id', element: <BuilderProfile /> },
           { path: ROUTES.PROJECTS, element: <Projects /> },
           { path: ROUTES.POST_BUILDER_PROJECT, element: <PostBuilderProject /> },
           { path: '/builder-projects/:id', element: <BuilderProjectDetail /> },

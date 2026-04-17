@@ -4,9 +4,25 @@ import useAuthStore from '../../../store/auth.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import { ROLE_LABELS } from '../../../constants/roles.js';
 import { resolveAvatarUrl } from '../../../utils/avatarUrl.js';
+import { useEffect, useState } from 'react';
+import api from '../../../lib/axios.js';
+import BuilderProjectCard from '../../builderProjects/components/BuilderProjectCard.jsx';
+import { Loader2, PlusCircle, Building2 } from 'lucide-react';
 
 export default function Profile() {
   const { user } = useAuthStore();
+  const [myProjects, setMyProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+
+  useEffect(() => {
+    if (user && user.role === 'builder') {
+      setLoadingProjects(true);
+      api.get(`/builder-projects?builder=${user._id}&sort=-createdAt`)
+        .then(({ data }) => setMyProjects(data.data || []))
+        .catch(console.error)
+        .finally(() => setLoadingProjects(false));
+    }
+  }, [user]);
 
   if (!user) return null;
 
@@ -174,6 +190,47 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* My Projects Section (For Builders) */}
+      {user.role === 'builder' && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-orange-600" />
+              My Posted Projects
+            </h2>
+            <Link
+              to={ROUTES.POST_BUILDER_PROJECT}
+              className="flex items-center gap-1.5 bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-orange-100 transition-colors"
+            >
+              <PlusCircle className="w-4 h-4" /> Post New
+            </Link>
+          </div>
+          
+          {loadingProjects ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 text-orange-600 animate-spin" />
+            </div>
+          ) : myProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myProjects.map(proj => (
+                <BuilderProjectCard key={proj._id} project={proj} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <p className="text-gray-500 mb-4">You haven't posted any projects yet.</p>
+              <Link
+                to={ROUTES.POST_BUILDER_PROJECT}
+                className="inline-flex items-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+              >
+                <PlusCircle className="w-4 h-4" /> Post your first project
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }

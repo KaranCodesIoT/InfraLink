@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../../store/auth.store.js';
@@ -289,6 +290,135 @@ export default function Payments() {
       {showPaymentForm && (
         <PaymentForm onClose={() => setShowPaymentForm(false)} onSuccess={handlePaymentSuccess} />
       )}
+=======
+import { useState } from 'react';
+import { CreditCard, Smartphone, Plus, CheckCircle2, ShieldCheck, MoreVertical } from 'lucide-react';
+
+export default function Payments() {
+  const [activeTab, setActiveTab] = useState('payment-methods');
+
+  return (
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Payments & Billing</h1>
+        <p className="text-gray-500 mt-2">Manage your connected payment methods and transaction history.</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl w-fit mb-8">
+        <button
+          onClick={() => setActiveTab('payment-methods')}
+          className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
+            activeTab === 'payment-methods' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Payment Methods
+        </button>
+        <button
+          onClick={() => setActiveTab('transactions')}
+          className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
+            activeTab === 'transactions' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Transaction History
+        </button>
+      </div>
+
+      {activeTab === 'payment-methods' && (
+        <div className="space-y-8">
+          {/* UPI Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-indigo-600" />
+                UPI Apps & IDs
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Linked UPI Example */}
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm relative group">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
+                      <span className="text-indigo-600 font-bold text-sm">GPay</span>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">user@okaxis</p>
+                      <p className="text-xs text-green-600 font-medium flex items-center gap-1 mt-0.5">
+                        <CheckCircle2 className="w-3 h-3" /> Default Method
+                      </p>
+                    </div>
+                  </div>
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Add New UPI Button */}
+              <button className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-5 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-100 hover:border-gray-300 hover:text-gray-700 transition-all group min-h-[120px]">
+                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                  <Plus className="w-5 h-5 text-indigo-600" />
+                </div>
+                <span className="text-sm font-semibold">Link New UPI ID</span>
+              </button>
+            </div>
+          </section>
+
+          <hr className="border-gray-100" />
+
+          {/* Cards Section */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-orange-600" />
+                Credit & Debit Cards
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Linked Card Example */}
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-5 rounded-2xl shadow-lg relative text-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-10 -mt-10" />
+                <div className="flex justify-between items-start mb-8">
+                  <ShieldCheck className="w-6 h-6 text-gray-300 opacity-80" />
+                  <span className="text-xs font-bold uppercase tracking-wider bg-white/20 px-2 py-1 rounded">Visa</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-gray-400 text-xs font-medium uppercase tracking-widest">Card Number</p>
+                  <p className="font-mono text-lg tracking-wider">•••• •••• •••• 4242</p>
+                </div>
+                <div className="flex justify-between items-center mt-6">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase">Valid Thru</p>
+                    <p className="text-sm font-medium font-mono border-b border-dashed border-gray-600">12 / 28</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add New Card Button */}
+              <button className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-5 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-100 hover:border-gray-300 hover:text-gray-700 transition-all group min-h-[180px]">
+                <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                  <Plus className="w-5 h-5 text-orange-600" />
+                </div>
+                <span className="text-sm font-semibold">Add New Card</span>
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {activeTab === 'transactions' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+           <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+             <CreditCard className="w-8 h-8 text-gray-300" />
+           </div>
+           <h3 className="text-lg font-bold text-gray-900 mb-1">No Transactions Yet</h3>
+           <p className="text-gray-500 text-sm">When you make or receive payments, your history will appear here.</p>
+        </div>
+      )}
+>>>>>>> Stashed changes
     </div>
   );
 }

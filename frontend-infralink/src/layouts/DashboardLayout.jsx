@@ -17,7 +17,6 @@ const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD, roles: '*' },
   { label: 'Jobs', icon: Briefcase, path: ROUTES.JOBS, roles: '*' },
   { label: 'Projects', icon: FolderOpen, path: ROUTES.PROJECTS, roles: '*' },
-  { label: 'Post Project', icon: PlusCircle, path: ROUTES.POST_BUILDER_PROJECT, roles: [ROLES.BUILDER] },
   { label: 'Messages', icon: MessageSquare, path: ROUTES.MESSAGES, roles: '*' },
   { label: 'Payments', icon: CreditCard, path: ROUTES.PAYMENTS, roles: '*' },
   { label: 'Reviews', icon: Star, path: ROUTES.REVIEWS, roles: '*' },

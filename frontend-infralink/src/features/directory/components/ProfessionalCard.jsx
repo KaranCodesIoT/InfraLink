@@ -27,16 +27,37 @@ export default function ProfessionalCard({ professional }) {
                 {yearsOfExperience !== undefined && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-xs">{yearsOfExperience} Yrs Exp</span>}
               </div>
               
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-3 mt-2 mb-2">
                 <div className="flex items-center text-sm font-bold text-gray-900 bg-yellow-50 px-2 py-0.5 rounded-lg border border-yellow-100">
                   <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400 mr-1" />
                   {Number(professional.averageRating || 0).toFixed(1)}
                 </div>
                 <div className="text-xs text-gray-500 flex items-center">
                   <User className="w-3 h-3 mr-1" />
-                  {professional.followersCount || 0} followers
+                  {professional.followersCount || 0} {role === 'supplier' ? 'clients' : 'followers'}
                 </div>
               </div>
+              
+              {/* Dynamic Badges */}
+              {role === 'supplier' && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                    {professional.isVerified && (
+                        <span className="bg-blue-50 text-blue-600 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm border border-blue-100 flex items-center">
+                            Verified
+                        </span>
+                    )}
+                    {professional.averageRating >= 4.5 && (
+                        <span className="bg-orange-50 text-orange-600 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm border border-orange-100">
+                            Top Rated
+                        </span>
+                    )}
+                    {(professional.logistics?.sameDayDelivery || professional.aiMetrics?.deliverySuccessRate > 90) && (
+                        <span className="bg-green-50 text-green-600 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-sm border border-green-100">
+                            Fast Delivery
+                        </span>
+                    )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -64,7 +85,12 @@ export default function ProfessionalCard({ professional }) {
 
       <div className="border-t border-gray-50 p-4">
         <Link
-          to={role === 'contractor' ? `/directory/contractor/${_id}` : `${ROUTES.DIRECTORY}/${_id}`}
+          to={
+            role === 'contractor' ? `/directory/contractor/${_id}` : 
+            role === 'builder' ? `/directory/builder/${_id}` : 
+            role === 'supplier' ? `/directory/supplier/${_id}` : 
+            `${ROUTES.DIRECTORY}/${_id}`
+          }
           className="w-full flex items-center justify-center space-x-2 text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
         >
           <span>View Detailed Profile</span>

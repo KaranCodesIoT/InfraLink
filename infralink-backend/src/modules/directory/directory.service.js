@@ -2,6 +2,7 @@ import User from '../users/user.model.js';
 import BuilderProfile from '../builders/builderProfile.model.js';
 import ContractorProfile from '../contractors/contractorProfile.model.js';
 import WorkerProfile from '../workers/workerProfile.model.js';
+import SupplierProfile from '../suppliers/supplierProfile.model.js';
 import { buildPaginationMeta } from '../../utils/pagination.utils.js';
 import { ALL_ROLES } from '../../constants/roles.js';
 
@@ -80,20 +81,17 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
         filter.$and = andConditions;
     }
 
-    const skip = (page - 1) * limit;
+    // Since rating is stored on the profiles, we'll fetch all matching users, 
+    // populate their profiles, filter them in memory by rating, and then paginate.
+    const allMatchingUsers = await User.find(filter)
+        .select('-password -refreshToken -__v')
+        .sort({ createdAt: -1 })
+        .lean();
 
-    const [professionals, total] = await Promise.all([
-        User.find(filter)
-            .select('-password -refreshToken -__v') // Exclude sensitive fields
-            .sort({ createdAt: -1 }) // Newest first
-            .skip(skip)
-            .limit(limit)
-            .lean(),
-        User.countDocuments(filter)
-    ]);
+    let processedProfessionals = [];
 
     // Attach basic builder/contractor profile info for card display
-    for (const prof of professionals) {
+    for (const prof of allMatchingUsers) {
         if (prof.role === 'builder') {
             const bp = await BuilderProfile.findOne({ user: prof._id })
                 .select('companyName professionalDetails yearsOfExperience followersCount averageRating')
@@ -104,6 +102,8 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
                 prof.yearsOfExperience = bp.yearsOfExperience;
                 prof.followersCount = bp.followersCount || 0;
                 prof.averageRating = bp.averageRating || 0;
+            } else {
+                prof.averageRating = 0;
             }
         } else if (prof.role === 'contractor') {
             const cp = await ContractorProfile.findOne({ user: prof._id })
@@ -115,6 +115,8 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
                 prof.yearsOfExperience = cp.experience;
                 prof.followersCount = cp.followersCount || 0;
                 prof.averageRating = cp.averageRating || 0;
+            } else {
+                prof.averageRating = 0;
             }
         } else if (prof.role === 'worker' || prof.role === 'labour') {
             const wp = await WorkerProfile.findOne({ user: prof._id })
@@ -125,12 +127,55 @@ export const findProfessionals = async ({ role, page, limit, search, location, r
                 prof.yearsOfExperience = wp.yearsOfExperience;
                 prof.followersCount = wp.followersCount || 0;
                 prof.averageRating = wp.averageRating || 0;
+            } else {
+                prof.averageRating = 0;
             }
+        } else if (prof.role === 'supplier') {
+            const sp = await SupplierProfile.findOne({ user: prof._id })
+                .select('businessName categories verification reputation aiMetrics logistics')
+                .lean();
+            if (sp) {
+                prof.companyName = sp.businessName;
+                prof.skills = sp.categories || [];
+                prof.yearsOfExperience = sp.verification?.yearsOfExperience || 0;
+                // We use followersCount as a generic alias in the card, so let's use totalOrders for suppliers
+                prof.followersCount = sp.reputation?.totalOrders || 0; 
+                prof.averageRating = sp.reputation?.averageRating || 0;
+                prof.aiMetrics = sp.aiMetrics; // Used for algorithm sorting
+                prof.isVerified = sp.verification?.verifiedBadge || false;
+                prof.logistics = sp.logistics; // For 'Fast Delivery' badge check
+            } else {
+                prof.averageRating = 0;
+            }
+        } else {
+            prof.averageRating = 0;
+        }
+        
+        // Apply rating filter
+        if (rating) {
+            if (prof.averageRating >= rating) {
+                processedProfessionals.push(prof);
+            }
+        } else {
+            processedProfessionals.push(prof);
         }
     }
 
+    // AI Supplier Ranking Logic
+    if (role === 'supplier') {
+        processedProfessionals.sort((a, b) => {
+            const scoreA = (a.averageRating * 10) + (a.aiMetrics?.deliverySuccessRate || 0) + (a.aiMetrics?.reliabilityScore || 0);
+            const scoreB = (b.averageRating * 10) + (b.aiMetrics?.deliverySuccessRate || 0) + (b.aiMetrics?.reliabilityScore || 0);
+            return scoreB - scoreA; // descending
+        });
+    }
+
+    const total = processedProfessionals.length;
+    const skip = (page - 1) * limit;
+    const paginatedProfessionals = processedProfessionals.slice(skip, skip + limit);
+
     return {
-        professionals,
+        professionals: paginatedProfessionals,
         pagination: buildPaginationMeta(total, page, limit)
     };
 };
@@ -197,6 +242,20 @@ export const getProfessionalById = async (id, requesterUserId) => {
             } else {
                 user.isFollowing = false;
             }
+        }
+    } else if (user.role === 'supplier') {
+        const supplierProfile = await SupplierProfile.findOne({ user: id }).lean();
+        if (supplierProfile) {
+            user.supplierProfile = supplierProfile;
+            user.skills = supplierProfile.categories || [];
+            user.companyName = supplierProfile.businessName;
+            
+            user.followersCount = supplierProfile.reputation?.totalOrders || 0;
+            user.averageRating = supplierProfile.reputation?.averageRating || 0;
+            user.totalReviews = supplierProfile.reputation?.repeatClients || 0;
+            user.isVerified = supplierProfile.verification?.verifiedBadge || false;
+            
+            user.isFollowing = false;
         }
     }
 

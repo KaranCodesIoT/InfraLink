@@ -15,7 +15,8 @@ import {
   CheckCircle,
   Clock,
   ArrowRight,
-  Calendar
+  Calendar,
+  ShoppingBag
 } from 'lucide-react';
 
 export default function ClientDashboard() {
@@ -39,6 +40,7 @@ export default function ClientDashboard() {
       id: 1,
       title: 'Builder & Developer',
       role: ROLES.BUILDER,
+      path: '/directory/builders',
       icon: Building2,
       description: 'Find real estate developers and construction firms.',
       color: 'bg-blue-500',
@@ -73,20 +75,11 @@ export default function ClientDashboard() {
     },
     {
       id: 5,
-      title: 'Material Delivery',
-      role: ROLES.SUPPLIER,
-      icon: Truck,
-      description: 'Wholesale suppliers and logistics services.',
+      title: 'Suppliers & Marketplace',
+      path: ROUTES.MARKETPLACE,
+      icon: ShoppingBag,
+      description: 'Wholesale materials, tools, and construction equipment.',
       color: 'bg-cyan-500',
-      count: categoryStats[ROLES.SUPPLIER] || 0,
-    },
-    {
-      id: 6,
-      title: 'Available Jobs',
-      path: ROUTES.JOBS,
-      icon: FileText,
-      description: 'Find and apply to available jobs posted by users.',
-      color: 'bg-rose-500',
       count: 'Live',
     },
     {

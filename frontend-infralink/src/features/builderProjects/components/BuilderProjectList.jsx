@@ -3,7 +3,7 @@ import api from '../../../lib/axios.js';
 import BuilderProjectCard from './BuilderProjectCard.jsx';
 import { Loader2, Sparkles, Building2, Filter, HardHat, CheckCircle2, MapPin } from 'lucide-react';
 
-export default function BuilderProjectList({ builderId, onProjectsLoaded }) {
+export default function BuilderProjectList({ builderId, onProjectsLoaded, searchQuery }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,21 +14,23 @@ export default function BuilderProjectList({ builderId, onProjectsLoaded }) {
   const [locationQuery, setLocationQuery] = useState(''); // Location filter
 
   useEffect(() => {
-    // Basic debounce for location search
+    // Basic debounce for location and text search
     const timer = setTimeout(() => {
       fetchProjects();
     }, 400);
     return () => clearTimeout(timer);
-  }, [builderId, propertyType, sort, locationQuery]);
+  }, [builderId, propertyType, sort, locationQuery, searchQuery]);
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
       setError(null);
       // Construct query string
-      let query = `/builder-projects?builder=${builderId}&sort=${sort}`;
+      let query = `/builder-projects?sort=${sort}`;
+      if (builderId) query += `&builder=${builderId}`;
       if (propertyType) query += `&propertyType=${propertyType}`;
       if (locationQuery) query += `&city=${encodeURIComponent(locationQuery)}`;
+      if (searchQuery) query += `&search=${encodeURIComponent(searchQuery)}`;
 
       const { data } = await api.get(query);
       const fetchedProjects = data.data || [];
@@ -64,7 +66,7 @@ export default function BuilderProjectList({ builderId, onProjectsLoaded }) {
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-orange-500" />
-            Projects by Builder
+            {builderId ? 'Projects by Builder' : 'All Construction Projects'}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             Discover all {projects.length > 0 ? projects.length : ''} properties listed

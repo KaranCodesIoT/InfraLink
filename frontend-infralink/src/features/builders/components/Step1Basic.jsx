@@ -50,6 +50,7 @@ export default function Step1Basic() {
           >
             <option value="Individual Contractor">Individual Contractor</option>
             <option value="Builder Company">Builder Company</option>
+            <option value="Builder">Builder</option>
             <option value="Freelancer">Freelancer</option>
           </select>
         </div>

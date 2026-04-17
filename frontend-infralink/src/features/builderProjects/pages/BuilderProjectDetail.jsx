@@ -4,6 +4,7 @@ import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle,
 import useAuthStore from '../../../store/auth.store';
 import { getOrCreateConversation } from '../../messaging/services/message.service.js';
 import useBuilderProjectStore from '../../../store/builderProject.store';
+import useFavoritesStore from '../../../store/favorites.store';
 import useUIStore from '../../../store/ui.store';
 
 export default function BuilderProjectDetail() {
@@ -128,6 +129,25 @@ export default function BuilderProjectDetail() {
     }
   };
 
+  const handleDeleteProject = async () => {
+    if (!deleteReason.trim()) {
+      toast.error('Please provide a reason for deletion');
+      return;
+    }
+    try {
+      await deleteProject(project._id, deleteReason);
+      toast.success('Project deleted successfully');
+      // Cleanup locally cached favorites gracefully
+      if (useFavoritesStore.getState().isFavorite(user?._id, project._id)) {
+        useFavoritesStore.getState().toggleFavorite(user?._id, project);
+      }
+      setShowDeleteModal(false);
+      navigate('/dashboard'); // Navigate home/dashboard after deletion
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete project');
+    }
+  };
+
   // --- Units Update Logic ---
   const handleSaveUnits = async () => {
     const val = Number(editUnitsVal);
@@ -206,18 +226,41 @@ export default function BuilderProjectDetail() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
         <div className="p-6 md:p-8 border-b border-gray-100 flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.projectName}</h1>
-              {project.projectStatus === 'Ready to Move' ? (
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200">
-                  Ready to Move
-                </span>
-              ) : (
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
-                  Under Construction
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {project.projectStatus === 'Ready to Move' || project.projectStatus === 'Completed' ? (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm">
+                    {project.projectStatus}
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200 shadow-sm">
+                    {project.projectStatus}
+                  </span>
+                )}
+              </div>
             </div>
+            
+            {/* Owner Action Buttons */}
+            {isOwner && (
+              <div className="flex items-center gap-2 mt-3 mb-4">
+                <button 
+                  onClick={() => toast.info('Detailed edit mode coming soon!')}
+                  className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 shadow-sm transition"
+                >
+                  <Settings className="w-3.5 h-3.5" /> Edit Project
+                </button>
+                {(project.projectStatus !== 'Ready to Move' && project.projectStatus !== 'Completed') && (
+                  <button 
+                    onClick={() => setShowDeleteModal(true)}
+                    className="px-3 py-1.5 text-xs font-semibold border border-red-200 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-1.5 shadow-sm transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Project
+                  </button>
+                )}
+              </div>
+            )}
+
             <p className="text-gray-500 flex items-center gap-1.5 md:text-lg">
               <MapPin className="w-5 h-5 text-gray-400" />
               {project.area}, {project.city}

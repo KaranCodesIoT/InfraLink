@@ -7,6 +7,10 @@ const connectDB = async () => {
     logger.info(`MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
     logger.error(`MongoDB connection error: ${error.message}`);
+    if (process.env.MOCK_SERVICES === 'true') {
+      logger.warn('⚠️  Running in MOCK MODE for database. No data will be persisted.');
+      return;
+    }
     process.exit(1);
   }
 };
