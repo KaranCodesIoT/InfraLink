@@ -16,8 +16,25 @@ export const CONTRACTOR_TYPES = [
     'False Ceiling Contractor',
     'Tiles & Marble Contractor',
     'Waterproofing Contractor',
-    'Demolition Contractor'
+    'Demolition Contractor',
+    'RCC Contractor (Reinforced Concrete)',
+    'Piling / Foundation Contractor',
+    'Scaffolding Contractor',
+    'Landscaping Contractor',
+    'Road / Paving Contractor',
+    'Excavation Contractor',
+    'Fire Safety Contractor',
+    'Security Systems Contractor (CCTV, Access Control)',
+    'MEP Contractor (Mechanical, Electrical, Plumbing)',
+    'Glass & Aluminum Contractor',
+    'Curtain / Blinds Contractor',
+    'Furniture Contractor (Custom Work)',
+    'Home Automation Contractor',
+    'Solar Installation Contractor',
+    'Industrial Equipment Installation Contractor',
+    'Lift / Elevator Contractor'
 ];
+
 
 export const PROFESSION_TYPES = [
     'Architect',

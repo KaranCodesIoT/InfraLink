@@ -17,8 +17,11 @@ router.patch('/request/:conversationId/reject', messageController.rejectMessageR
 router.get('/requests', messageController.getMessageRequests);
 
 // ─── Direct Messaging ─────────────────────────────────────────────────────────
-router.post('/send', validate(sendMessageSchema), verifyBlock, verifyFollowExists, messageController.sendMessage);
-router.post('/send/attachments', uploadMultiple('attachments', 10), verifyBlock, verifyFollowExists, messageController.uploadAttachments);
+// Note: /send and /send/attachments do NOT need verifyBlock/verifyFollowExists
+// because they operate on an existing conversationId (not recipientId).
+// Participant authorization is enforced inside message.service.sendMessage().
+router.post('/send', validate(sendMessageSchema), messageController.sendMessage);
+router.post('/send/attachments', uploadMultiple('attachments', 10), messageController.uploadAttachments);
 router.post('/conversation', validate(conversationSchema), verifyBlock, verifyFollowExists, messageController.getOrCreateDirectConversation);
 
 // ─── Conversations & Messages ─────────────────────────────────────────────────

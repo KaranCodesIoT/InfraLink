@@ -100,7 +100,50 @@ const usePostsStore = create((set) => ({
     }
   },
 
-  clearPosts: () => set({ posts: [], pagination: null, error: null })
+  clearPosts: () => set({ posts: [], pagination: null, error: null }),
+
+  applyToProject: async (postId) => {
+    try {
+      const { data } = await api.post(`/posts/${postId}/apply`);
+      set((state) => ({
+        posts: state.posts.map(post => {
+          if (post._id === postId) {
+            return {
+              ...post,
+              applications: [...(post.applications || []), data.data]
+            };
+          }
+          return post;
+        })
+      }));
+      return data.data;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  updateApplicationStatus: async (postId, applicationId, status) => {
+    try {
+      const { data } = await api.patch(`/posts/${postId}/applications/${applicationId}`, { status });
+      set((state) => ({
+        posts: state.posts.map(post => {
+          if (post._id === postId) {
+            return {
+              ...post,
+              applications: post.applications.map(app => 
+                app._id === applicationId ? { ...app, status: data.data.status } : app
+              )
+            };
+          }
+          return post;
+        })
+      }));
+      return data.data;
+    } catch (e) {
+      throw e;
+    }
+  }
 }));
+
 
 export default usePostsStore;

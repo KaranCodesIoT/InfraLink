@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, MicOff, Volume2 } from 'lucide-react';
+import { Mic, MicOff, AudioLines } from 'lucide-react';
 
 const LANGUAGES = [
     { code: 'en-IN', label: 'EN', name: 'English' },
@@ -8,7 +8,7 @@ const LANGUAGES = [
 ];
 
 /**
- * Enhanced Voice Control with multi-language support and auto-play TTS
+ * Standard Voice Control (Push-to-talk)
  */
 export default function AssistantVoiceControl({
     onTranscription,
@@ -121,15 +121,21 @@ export default function AssistantVoiceControl({
     }, []);
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button
-                onClick={toggleListening}
-                className={`voice-btn ${isListening ? 'listening' : 'idle'}`}
-                title={isListening ? 'Stop listening' : `Speak (${LANGUAGES.find(l => l.code === language)?.name || 'English'})`}
-            >
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-            </button>
-        </div>
+        <button
+            onClick={toggleListening}
+            className={`transition-colors p-2 ${isListening ? 'text-orange-500 hover:text-orange-600' : 'text-gray-400 hover:text-gray-600'}`}
+            title={isListening ? 'Stop listening' : `Dictate (${LANGUAGES.find(l => l.code === language)?.name || 'English'})`}
+            style={{ 
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}
+        >
+            <Mic size={20} className={isListening ? 'animate-pulse' : ''} />
+        </button>
     );
 }
 

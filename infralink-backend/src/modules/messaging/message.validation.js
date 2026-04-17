@@ -30,11 +30,7 @@ export const conversationSchema = Joi.object({
 // ─── Send Message (within accepted conversation) ─────────────────────────────
 export const sendMessageSchema = Joi.object({
     conversationId: objectId.required(),
-    text: Joi.string().min(1).max(5000).when('attachments', {
-        is: Joi.exist(),
-        then: Joi.optional().allow(''),
-        otherwise: Joi.required(),
-    }),
+    text: Joi.string().max(5000).optional().allow('', null),
     attachments: Joi.array()
         .items(
             Joi.object({
@@ -46,7 +42,14 @@ export const sendMessageSchema = Joi.object({
         )
         .max(10)
         .optional(),
-});
+}).custom((value, helpers) => {
+    const hasText = value.text && value.text.trim().length > 0;
+    const hasAttachments = value.attachments && value.attachments.length > 0;
+    if (!hasText && !hasAttachments) {
+        return helpers.error('any.invalid', { message: 'Message must have text or at least one attachment' });
+    }
+    return value;
+}, 'text-or-attachment check');
 
 // ─── Mark messages as seen ────────────────────────────────────────────────────
 export const markSeenSchema = Joi.object({

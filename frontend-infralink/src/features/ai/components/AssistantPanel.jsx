@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Send, Sparkles, Hammer, Calculator, Box, Briefcase,
-    Package, HelpCircle, Trash2, Maximize2, Minimize2
+    Package, HelpCircle, Trash2, Maximize2, Minimize2, Plus, Mic
 } from 'lucide-react';
 import { askInfralinkAssistant, getAssistantHistory } from '../services/ai.service';
 import { executeAction, isNavigationAction } from '../services/actionHandler';
@@ -38,6 +38,7 @@ export default function AssistantPanel() {
     const [language, setLanguage] = useState('en-IN');
     const [dynamicSuggestions, setDynamicSuggestions] = useState([]);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [wasVoiceInput, setWasVoiceInput] = useState(false);
     const scrollRef = useRef(null);
 
     // Auto-scroll
@@ -60,15 +61,17 @@ export default function AssistantPanel() {
         return () => { mounted = false; };
     }, []);
 
-    const handleSend = async (textOverride = null) => {
+    const handleSend = async (textOverride = null, isVoice = false) => {
         const question = (textOverride || input).trim();
         if (!question || isLoading) return;
 
+        setWasVoiceInput(isVoice);
         const userMsg = { id: Date.now(), role: 'user', text: question, timestamp: new Date() };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsLoading(true);
         setDynamicSuggestions([]);
+        setLastReply('');
 
         try {
             const botMsgId = Date.now() + 1;
@@ -136,10 +139,15 @@ export default function AssistantPanel() {
         }
     };
 
+    const handleVoiceTranscription = (text) => {
+        handleSend(text, true);
+    };
+
     const clearChat = () => {
         setMessages([INITIAL_MESSAGE]);
         setDynamicSuggestions([]);
         setLastReply('');
+        setWasVoiceInput(false);
     };
 
     const handleWorkerClick = (worker) => {
@@ -269,7 +277,7 @@ export default function AssistantPanel() {
                             <button
                                 key={i}
                                 className="suggestion-chip"
-                                onClick={() => handleSend(s.query)}
+                                onClick={() => handleSend(s.query, false)}
                             >
                                 {s.icon}
                                 {s.label}
@@ -278,29 +286,40 @@ export default function AssistantPanel() {
                     </div>
                 )}
 
-                <div className="input-bar">
-                    <AssistantVoiceControl
-                        onTranscription={handleSend}
-                        lastAssistantReply={lastReply}
-                        language={language}
-                    />
+                <div className="input-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors" title="Add attachment">
+                        <Plus size={22} />
+                    </button>
 
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Ask anything about construction..."
+                        onKeyDown={(e) => e.key === 'Enter' && handleSend(null, false)}
+                        placeholder="Ask anything"
                         disabled={isLoading}
+                        style={{ flex: 1, backgroundColor: 'transparent', border: 'none', outline: 'none', padding: '10px 0' }}
                     />
 
-                    <button
-                        onClick={() => handleSend()}
-                        disabled={isLoading || !input.trim()}
-                        className={`send-btn ${isLoading || !input.trim() ? 'disabled' : 'active'}`}
-                    >
-                        <Send size={18} />
-                    </button>
+                    {input.trim() ? (
+                        <button
+                            onClick={() => handleSend(null, false)}
+                            disabled={isLoading}
+                            className={`send-btn ${isLoading ? 'disabled' : 'active'}`}
+                            style={{ padding: '8px', borderRadius: '50%', backgroundColor: '#007AFF', color: 'white' }}
+                        >
+                            <Send size={18} />
+                        </button>
+                    ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <AssistantVoiceControl
+                                onTranscription={handleVoiceTranscription}
+                                lastAssistantReply={wasVoiceInput ? lastReply : ''}
+                                language={language}
+                                isLoading={isLoading}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

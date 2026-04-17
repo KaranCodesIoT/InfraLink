@@ -35,6 +35,18 @@ export const ROUTES = {
   BUILDER_PROJECTS: '/builder-projects',
   POST_BUILDER_PROJECT: '/builder-projects/post',
 
+  // Project Management Dashboard
+  PROJECT_DASHBOARD: '/project/:id/dashboard',
+  PROJECT_DASHBOARD_OVERVIEW: '/project/:id/dashboard',
+  PROJECT_DASHBOARD_WORKFLOW: '/project/:id/dashboard/workflow',
+  PROJECT_DASHBOARD_TASKS: '/project/:id/dashboard/tasks',
+  PROJECT_DASHBOARD_TEAMS: '/project/:id/dashboard/teams',
+  PROJECT_DASHBOARD_MATERIALS: '/project/:id/dashboard/materials',
+  PROJECT_DASHBOARD_FINANCE: '/project/:id/dashboard/finance',
+  PROJECT_DASHBOARD_ISSUES: '/project/:id/dashboard/issues',
+  PROJECT_DASHBOARD_UPDATES: '/project/:id/dashboard/updates',
+  PROJECT_DASHBOARD_DOCUMENTS: '/project/:id/dashboard/documents',
+
   // Marketplace
   MARKETPLACE: '/marketplace',
   MATERIAL_DETAIL: '/marketplace/:id',

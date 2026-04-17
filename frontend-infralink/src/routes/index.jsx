@@ -43,6 +43,18 @@ import Payments from '../features/payments/pages/Payments.jsx';
 import AssistantPage from '../features/ai/pages/AssistantPage.jsx';
 import Feed from '../features/feed/pages/Feed.jsx';
 
+// Project Management Dashboard
+import ProjectDashboardLayout from '../features/project/layouts/ProjectDashboardLayout.jsx';
+import OverviewPage from '../features/project/overview/OverviewPage.jsx';
+import WorkflowPage from '../features/project/workflow/WorkflowPage.jsx';
+import TasksPage from '../features/project/tasks/TasksPage.jsx';
+import TeamsPage from '../features/project/teams/TeamsPage.jsx';
+import MaterialsPage from '../features/project/materials/MaterialsPage.jsx';
+import FinancePage from '../features/project/finance/FinancePage.jsx';
+import IssuesPage from '../features/project/issues/IssuesPage.jsx';
+import DailyUpdatesPage from '../features/project/dailyUpdates/DailyUpdatesPage.jsx';
+import DocumentsPage from '../features/project/documents/DocumentsPage.jsx';
+
 // Route chunks
 import clientRoutes from './client.routes.jsx';
 import workerRoutes from './worker.routes.jsx';
@@ -66,6 +78,24 @@ const router = createBrowserRouter([
       { path: '/complete-profile', element: <CompleteProfile /> },
       { path: '/builder-onboarding', element: <BuilderOnboarding /> },
       { path: '/contractor-onboarding', element: <ContractorOnboarding /> },
+
+      // ── Project Management Dashboard (own layout) ──
+      {
+        path: '/project/:id/dashboard',
+        element: <ProjectDashboardLayout />,
+        children: [
+          { index: true, element: <OverviewPage /> },
+          { path: 'workflow', element: <WorkflowPage /> },
+          { path: 'tasks', element: <TasksPage /> },
+          { path: 'teams', element: <TeamsPage /> },
+          { path: 'materials', element: <MaterialsPage /> },
+          { path: 'finance', element: <FinancePage /> },
+          { path: 'issues', element: <IssuesPage /> },
+          { path: 'updates', element: <DailyUpdatesPage /> },
+          { path: 'documents', element: <DocumentsPage /> },
+        ],
+      },
+
       {
         element: <DashboardLayout />,
         children: [

@@ -76,16 +76,18 @@ const useMessagingStore = create((set, get) => ({
                 finalAttachments = existingAttachments;
             }
 
-            // 3. Send the actual message
-            const { data } = await messageSvc.sendMessage({ conversationId, text, attachments: finalAttachments });
+            // 3. Send the actual message (only include attachments if non-empty)
+            const payload = { conversationId, text };
+            if (finalAttachments.length > 0) payload.attachments = finalAttachments;
+            const { data } = await messageSvc.sendMessage(payload);
             set((s) => {
-                if (s.messages.some(m => m._id === data.data._id)) return s;
+                if (s.messages.some(m => String(m._id) === String(data.data._id))) return s;
                 return { messages: [...s.messages, data.data] };
             });
             // Update last message in conversation list
             set((s) => ({
                 conversations: s.conversations.map((c) =>
-                    c._id === conversationId ? { ...c, lastMessage: data.data, updatedAt: new Date().toISOString() } : c
+                    String(c._id) === String(conversationId) ? { ...c, lastMessage: data.data, updatedAt: new Date().toISOString() } : c
                 ),
             }));
             return data.data;
@@ -158,16 +160,17 @@ const useMessagingStore = create((set, get) => ({
     // ─── Real-Time Handlers ─────────────────────────────────────────────────────
     addIncomingMessage: (message) => {
         const { activeConversation } = get();
-        if (activeConversation && message.conversation === activeConversation._id) {
+        const msgConvId = String(message.conversation);
+        if (activeConversation && msgConvId === String(activeConversation._id)) {
             set((s) => {
-                if (s.messages.some(m => m._id === message._id)) return s;
+                if (s.messages.some(m => String(m._id) === String(message._id))) return s;
                 return { messages: [...s.messages, message] };
             });
         }
         // Update conversation list
         set((s) => ({
             conversations: s.conversations.map((c) =>
-                c._id === message.conversation
+                String(c._id) === msgConvId
                     ? { ...c, lastMessage: message, updatedAt: new Date().toISOString() }
                     : c
             ),

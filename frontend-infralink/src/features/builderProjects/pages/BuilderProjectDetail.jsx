@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Maximize2, MessageSquare } from 'lucide-react';
+import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Maximize2, MessageSquare, LayoutDashboard, Briefcase } from 'lucide-react';
 import useAuthStore from '../../../store/auth.store';
 import { getOrCreateConversation } from '../../messaging/services/message.service.js';
 import useBuilderProjectStore from '../../../store/builderProject.store';
@@ -11,7 +11,7 @@ export default function BuilderProjectDetail() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { toast } = useUIStore();
-  const { fetchProjectById, currentProject, isLoading, addUpdate, uploadMedia, updateProject, isSubmitting } = useBuilderProjectStore();
+  const { fetchProjectById, currentProject, isLoading, addUpdate, uploadMedia, updateProject, applyToProject, isSubmitting } = useBuilderProjectStore();
 
   const [updateText, setUpdateText] = useState('');
   const [updateFiles, setUpdateFiles] = useState([]);
@@ -90,6 +90,20 @@ export default function BuilderProjectDetail() {
       toast.error('Failed to start conversation. The builder might have messaging disabled or a network error occurred.');
     } finally {
       setIsStartingChat(false);
+    }
+  };
+
+  // --- Apply Logic ---
+  const handleApply = async () => {
+    if (!user) {
+      toast.error('Please log in first.');
+      return;
+    }
+    try {
+      await applyToProject(id);
+      toast.success('Your application to join this project has been sent!');
+    } catch (e) {
+      toast.error('Failed to apply. You might have already applied.');
     }
   };
 
@@ -221,6 +235,25 @@ export default function BuilderProjectDetail() {
             >
               <Maximize2 className="w-4 h-4" /> Explore in 3D / AR
             </button>
+            {isOwner && (
+              <button
+                onClick={() => navigate(`/project/${id}/dashboard`)}
+                className="mt-2 flex items-center justify-center gap-2 w-full md:w-auto px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5"
+              >
+                <LayoutDashboard className="w-4 h-4" /> Manage Project
+              </button>
+            )}
+
+            {!isOwner && user && ['contractor', 'architect', 'worker', 'labour'].includes(user.role) && (
+              <button
+                onClick={handleApply}
+                disabled={isSubmitting || project.applications?.some((app) => app.user === user._id || app.user?._id === user._id)}
+                className="mt-2 flex items-center justify-center gap-2 w-full md:w-auto px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold shadow-lg transition-all hover:-translate-y-0.5 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                <Briefcase className="w-4 h-4" /> 
+                {project.applications?.some((app) => app.user === user._id || app.user?._id === user._id) ? 'Applied' : 'Apply to Project'}
+              </button>
+            )}
           </div>
         </div>
 

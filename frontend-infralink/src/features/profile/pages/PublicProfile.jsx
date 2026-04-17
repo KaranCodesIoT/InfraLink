@@ -6,6 +6,8 @@ import { ROLES, ROLE_LABELS } from '../../../constants/roles.js';
 import FollowButton from '../../network/components/FollowButton.jsx';
 import BlockButton from '../../network/components/BlockButton.jsx';
 import useNetworkStore from '../../../store/network.store.js';
+import BuilderProjectCard from '../../builderProjects/components/BuilderProjectCard.jsx';
+import api from '../../../lib/axios.js';
 
 export default function PublicProfile() {
   const { id } = useParams();
@@ -16,6 +18,10 @@ export default function PublicProfile() {
   const [isBlockedGlobal, setIsBlockedGlobal] = useState(false);
   const [canMessage, setCanMessage] = useState(false);
   const [isFollowingBack, setIsFollowingBack] = useState(false);
+
+  // For builder projects
+  const [builderProjects, setBuilderProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +40,24 @@ export default function PublicProfile() {
     };
     fetchProfile();
   }, [id]);
+
+  useEffect(() => {
+    // If it's a builder and they're not restricted, load their projects
+    if (profile?.role === 'builder' && (!profile.isPrivate || followStatus === 'accepted' || followStatus === 'following')) {
+      const fetchProjects = async () => {
+        try {
+          setLoadingProjects(true);
+          const { data } = await api.get(`/builder-projects?builder=${id}`);
+          setBuilderProjects(data.data || []);
+        } catch (err) {
+          console.error('Failed to fetch builder projects:', err);
+        } finally {
+          setLoadingProjects(false);
+        }
+      };
+      fetchProjects();
+    }
+  }, [profile, id, followStatus]);
 
   if (loading) return <div className="p-8 text-center text-gray-500 animate-pulse">Loading profile...</div>;
   
@@ -203,6 +227,32 @@ export default function PublicProfile() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Builder Projects Section */}
+      {!isRestricted && profile.role === 'builder' && (
+        <div className="mt-12">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-orange-600" />
+            Projects by {profile.name}
+          </h2>
+          
+          {loadingProjects ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            </div>
+          ) : builderProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {builderProjects.map((proj) => (
+                <BuilderProjectCard key={proj._id} project={proj} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-12 text-center text-gray-500">
+              No projects posted yet.
+            </div>
+          )}
         </div>
       )}
     </div>

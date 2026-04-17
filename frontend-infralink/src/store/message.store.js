@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import api from '../lib/axios.js';
 import { getErrorMessage } from '../utils/errorHandler.js';
 
-const useMessageStore = create((set) => ({
+const useMessageStore = create((set, get) => ({
     conversations: [],
     activeConversation: null,
     messages: [],
@@ -37,7 +37,10 @@ const useMessageStore = create((set) => ({
     sendMessage: async (conversationId, text) => {
         try {
             const { data } = await api.post('/messages/send', { conversationId, text });
-            set((s) => ({ messages: [...s.messages, data.data] }));
+            set((s) => {
+                if (s.messages.some(m => String(m._id) === String(data.data._id))) return s;
+                return { messages: [...s.messages, data.data] };
+            });
             return data.data;
         } catch (e) {
             set({ error: getErrorMessage(e) });
@@ -45,10 +48,16 @@ const useMessageStore = create((set) => ({
         }
     },
 
-    addIncomingMessage: (message) =>
-        set((s) => ({ messages: [...s.messages, message] })),
+    addIncomingMessage: (message) => {
+        set((s) => {
+            // Deduplicate by _id
+            if (s.messages.some(m => String(m._id) === String(message._id))) return s;
+            return { messages: [...s.messages, message] };
+        });
+    },
 
     clearError: () => set({ error: null }),
 }));
 
 export default useMessageStore;
+

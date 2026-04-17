@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore } from '../../../store/index.js';
 import ProfessionalCard from '../components/ProfessionalCard.jsx';
 import ContractorCard from '../components/ContractorCard.jsx';
-import { Loader2, Users, Search, MapPin, Star, HardHat, X } from 'lucide-react';
+import { Loader2, Users, Search, MapPin, Star, HardHat, X, ArrowLeft } from 'lucide-react';
 
 export default function ProfessionalDirectory() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -85,8 +85,15 @@ export default function ProfessionalDirectory() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="mb-8 flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-gray-100 rounded-full transition-all hover:scale-110 active:scale-95 group"
+            title="Go Back"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600 group-hover:text-orange-600" />
+          </button>
+          <div className="flex items-center gap-3">
             <div className="p-2.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg shadow-orange-200">
               <HardHat className="w-6 h-6 text-white" />
             </div>
@@ -213,9 +220,18 @@ export default function ProfessionalDirectory() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Professional Directory</h1>
-        <p className="text-gray-500 mt-1">Connect with trusted construction professionals across categories.</p>
+      <div className="mb-8 flex items-center gap-4">
+        <button 
+          onClick={() => navigate(-1)}
+          className="p-2 hover:bg-gray-100 rounded-full transition-all hover:scale-110 active:scale-95 group"
+          title="Go Back"
+        >
+          <ArrowLeft className="w-6 h-6 text-gray-600 group-hover:text-orange-600" />
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Professional Directory</h1>
+          <p className="text-gray-500 mt-1">Connect with trusted construction professionals across categories.</p>
+        </div>
       </div>
 
       {/* Filters & Search */}

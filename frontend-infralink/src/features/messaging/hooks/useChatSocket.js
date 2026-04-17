@@ -25,12 +25,14 @@ export default function useChatSocket(onTyping) {
         const socket = getSocket() || connectSocket();
         if (!socket || listenersAttached.current) return;
 
-        // Join personal room for notifications
+        // Join personal room for notifications (idempotent — safe to call multiple times)
         socket.emit('chat:join', { roomId: `user:${user._id}` });
 
         // ─── Listeners ───────────────────────────────────────────────────────────
         socket.on(EVENTS.NEW_MESSAGE, ({ message }) => {
-            if (message.sender !== user._id && message.sender?._id !== user._id) {
+            // Only process messages from other users (avoid duplicate from own send)
+            const senderId = typeof message.sender === 'object' ? message.sender._id : message.sender;
+            if (String(senderId) !== String(user._id)) {
                 addIncomingMessage(message);
             }
         });

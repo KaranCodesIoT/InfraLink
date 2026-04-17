@@ -28,6 +28,7 @@ function getSenderId(sender) {
     if (!sender) return '';
     if (typeof sender === 'string') return sender;
     if (sender._id) return String(sender._id);
+    if (sender.id) return String(sender.id);
     return String(sender);
 }
 
@@ -38,8 +39,8 @@ export default function ChatWindow({ conversation, messages, isLoading }) {
     const scrollContainerRef = useRef(null);
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const currentUserId = currentUser?._id ? String(currentUser._id) : '';
-    const otherUser = conversation?.participants?.find((p) => p._id !== currentUser?._id) || {};
+    const currentUserId = currentUser ? String(currentUser._id || currentUser.id) : '';
+    const otherUser = conversation?.participants?.find((p) => String(p._id || p.id) !== currentUserId) || {};
     const isRequest = conversation?.isRequest && !conversation?.isAccepted;
     const isAccepted = !conversation?.isRequest || conversation?.isAccepted;
     const roleClass = ROLE_COLORS[otherUser.role] || 'bg-gray-100 text-gray-600';
@@ -167,7 +168,7 @@ export default function ChatWindow({ conversation, messages, isLoading }) {
             </div>
 
             {/* ─── Messages Area ──────────────────────────────────────────────────── */}
-            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-5 py-4">
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto chat-container">
                 {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                         <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
@@ -179,14 +180,28 @@ export default function ChatWindow({ conversation, messages, isLoading }) {
                 ) : (
                     <>
                         {messages.map((msg) => {
-                            const senderId = getSenderId(msg.sender);
-                            const isMine = senderId === currentUserId;
+                            const rawSender = msg.sender || msg.senderId;
+                            let senderIdStr = '';
+                            if (rawSender) {
+                                if (typeof rawSender === 'string') senderIdStr = rawSender;
+                                else if (rawSender._id) senderIdStr = String(rawSender._id);
+                                else if (rawSender.id) senderIdStr = String(rawSender.id);
+                                else senderIdStr = String(rawSender);
+                            }
+                            
+                            const myIdStr = currentUserId || 'null';
+                            const isMine = Boolean(senderIdStr && myIdStr && myIdStr !== 'null' && senderIdStr.toString() === myIdStr.toString());
+                            
                             return (
-                                <MessageBubble
-                                    key={msg._id || msg.createdAt}
-                                    message={msg}
-                                    isMine={isMine}
-                                />
+                                <div 
+                                    key={msg._id || msg.createdAt} 
+                                    className={`chat-bubble-wrapper ${isMine ? 'sent' : 'received'}`} 
+                                >
+                                    <MessageBubble
+                                        message={msg}
+                                        isMine={isMine}
+                                    />
+                                </div>
                             );
                         })}
                         <div ref={messagesEndRef} />

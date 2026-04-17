@@ -95,6 +95,27 @@ const useBuilderProjectStore = create((set) => ({
     }
   },
 
+  applyToProject: async (id) => {
+    set({ isSubmitting: true, error: null });
+    try {
+      const { data } = await api.post(`/builder-projects/${id}/apply`);
+      set((s) => {
+        if (s.currentProject && s.currentProject._id === id) {
+           const updatedApps = [...(s.currentProject.applications || []), data.data];
+           return { 
+             currentProject: { ...s.currentProject, applications: updatedApps },
+             isSubmitting: false 
+           };
+        }
+        return { isSubmitting: false };
+      });
+      return data.data;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isSubmitting: false });
+      throw e;
+    }
+  },
+
   clearError: () => set({ error: null }),
 }));
 

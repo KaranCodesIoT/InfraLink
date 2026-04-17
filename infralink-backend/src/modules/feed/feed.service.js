@@ -139,5 +139,12 @@ export const getPersonalizedFeed = async (userId, userRole, page = 1, limit = 15
     // Cache for 5 minutes
     await cacheSet(cacheKey, result, 300);
 
+    // Populate applications user for the final result
+    await Post.populate(result.posts, {
+        path: 'applications.user',
+        select: 'name role profileImage avatar'
+    });
+
     return result;
 };
+

@@ -41,6 +41,19 @@ const postSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Location cannot exceed 100 characters']
   },
+  // New Common Project Fields
+  budgetRange: { type: String, trim: true },
+  startDate: { type: Date },
+  duration: { type: String, trim: true },
+  requiredWorkers: { type: Number, default: 0 },
+  contactOption: { type: String, trim: true },
+  
+  // Dynamic Role-Specific Details
+  roleSpecificDetails: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -61,7 +74,25 @@ const postSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
+  }],
+  applications: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending'
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now
+    }
   }]
+
+
 }, {
   timestamps: true
 });

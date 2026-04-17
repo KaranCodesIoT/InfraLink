@@ -101,3 +101,25 @@ html {
     padding-top: 80px;
   }
 }
+
+/* ─── Chat Message Styles ─────────────────────────────────────────────── */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.chat-bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  max-width: 70%;
+}
+
+.chat-bubble-wrapper.sent {
+  align-self: flex-end;
+}
+
+.chat-bubble-wrapper.received {
+  align-self: flex-start;
+}

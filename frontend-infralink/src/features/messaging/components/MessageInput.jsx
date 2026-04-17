@@ -11,6 +11,7 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
 
     const [isSending, setIsSending] = useState(false);
     const [isVoiceRecording, setIsVoiceRecording] = useState(false);
+    const [sendError, setSendError] = useState('');
 
     // Called by VoiceRecorder when transcription is complete
     const handleVoiceTranscript = useCallback((transcribedText) => {
@@ -29,6 +30,7 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
         if (isSending) return;
         
         setIsSending(true);
+        setSendError('');
         try {
             await onSend(trimmed, attachments);
             setText('');
@@ -36,6 +38,9 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
             inputRef.current?.focus();
         } catch (error) {
             console.error("Failed to send message", error);
+            const msg = error?.response?.data?.error?.message || error?.message || 'Failed to send message';
+            setSendError(msg);
+            setTimeout(() => setSendError(''), 4000);
         } finally {
             setIsSending(false);
         }
@@ -68,6 +73,13 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
 
     return (
         <div className="border-t border-gray-100 bg-white px-4 py-3">
+            {/* Send error feedback */}
+            {sendError && (
+                <div className="mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium animate-in fade-in">
+                    ⚠ {sendError}
+                </div>
+            )}
+
             {/* Attachment preview */}
             {attachments.length > 0 && (
                 <div className="flex gap-2 mb-2 flex-wrap">

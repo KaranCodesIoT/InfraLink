@@ -257,19 +257,18 @@ function AttachmentItem({ attachment, isMine }) {
 }
 
 // ─── Message Bubble ──────────────────────────────────────────────────────────
-export default function MessageBubble({ message, isMine }) {
+export default function MessageBubble({ message, isMine, debugData }) {
     const hasText = message.text && message.text.trim().length > 0;
 
     return (
-        <div className={`flex w-full ${isMine ? 'justify-end' : 'justify-start'} mb-3`}>
-            <div className={`max-w-[75%]`}>
-                <div
-                    className={`px-4 py-2.5 shadow-sm ${
-                        isMine
-                            ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl rounded-br-sm'
-                            : 'bg-white text-gray-800 border border-gray-100 rounded-2xl rounded-bl-sm'
-                    }`}
-                >
+        <div className={`w-full`}>
+            <div
+                className={`px-4 py-2.5 shadow-sm ${
+                    isMine
+                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl rounded-tr-sm'
+                        : 'bg-white text-gray-800 border border-gray-100 rounded-2xl rounded-tl-sm'
+                }`}
+            >
                     {hasText && (
                         <div className="flex items-start gap-1.5">
                             <p className="text-sm leading-relaxed whitespace-pre-wrap break-words flex-1">{message.text}</p>
@@ -283,9 +282,9 @@ export default function MessageBubble({ message, isMine }) {
                 {/* Timestamp + Status */}
                 <div className={`flex items-center gap-1.5 mt-1 px-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
                     <span className="text-[11px] text-gray-400">{formatTime(message.createdAt)}</span>
+                    <span className="text-[9px] text-red-500 opacity-50">{debugData} e:{isMine.toString()}</span>
                     {isMine && STATUS_ICONS[message.status]}
                 </div>
-            </div>
         </div>
     );
 }

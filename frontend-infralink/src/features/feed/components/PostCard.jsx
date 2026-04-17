@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { 
   Heart, MessageCircle, Share2, MoreHorizontal, 
-  MapPin, Calendar, Clock, CheckCircle2, User
+  MapPin, Calendar, Clock, CheckCircle2, User, DollarSign, Users, X, Loader2, ArrowRight
 } from 'lucide-react';
+
 import { formatDistanceToNowNative } from '../../../utils/dateFormatting.js';
+import { useUIStore } from '../../../store/index.js';
 import useAuth from '../../../hooks/useAuth.js';
 import usePostsStore from '../../../store/posts.store.js';
 import useFeedStore from '../../../store/feed.store.js';
@@ -12,15 +14,34 @@ import { Link } from 'react-router-dom';
 
 export default function PostCard({ post }) {
   const { user: currentUser } = useAuth();
-  const { addComment } = usePostsStore();
+  const { addComment, applyToProject, updateApplicationStatus } = usePostsStore();
   const { toggleLike } = useFeedStore();
+  const { toast } = useUIStore();
   
   const [showComments, setShowComments] = useState(false);
+  const [showApplicants, setShowApplicants] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isLiking, setIsLiking] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const author = post.author || post.user;
+  const authorId = post.user?._id || post.user;
+  const author = post.author || (post.user && typeof post.user === 'object' ? post.user : authorId);
+  
+  const isOwner = currentUser?._id && authorId && currentUser._id.toString() === authorId.toString();
+  
+  const initialHasApplied = post.applications?.some(app => 
+    (app.user?._id || app.user).toString() === currentUser?._id?.toString()
+  );
+  
+  const initialAppStatus = post.applications?.find(app => 
+    (app.user?._id || app.user).toString() === currentUser?._id?.toString()
+  )?.status;
+
+  // Optimistic local state to prevent duplicate clicks across different stores
+  const [localHasApplied, setLocalHasApplied] = useState(initialHasApplied);
+  const [localAppStatus, setLocalAppStatus] = useState(initialAppStatus);
+
   const isLiked = post.likes?.includes(currentUser?._id);
   const timeAgo = formatDistanceToNowNative(post.createdAt);
 
@@ -47,6 +68,25 @@ export default function PostCard({ post }) {
     }
   };
 
+  const handleApply = async () => {
+    if (!currentUser) return toast.error('Log in to apply for projects');
+    setIsApplying(true);
+    try {
+      await applyToProject(post._id);
+      
+      // Update local state immediately so UI updates regardless of which Zustand store is active 
+      setLocalHasApplied(true);
+      setLocalAppStatus('pending');
+      
+      toast.success('Interest sent to project owner!');
+    } catch (e) {
+      toast.error(e?.response?.data?.error?.message || e.message || 'Failed to apply');
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+
   const contentThreshold = 200;
   const shouldTruncate = post.content.length > contentThreshold && !isExpanded;
   const displayContent = shouldTruncate 
@@ -55,15 +95,33 @@ export default function PostCard({ post }) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 mb-6 overflow-hidden">
+      {/* Project Management Header (Owner Only) */}
+      {isOwner && post.projectName && (
+        <div className="bg-gradient-to-r from-orange-500 to-orange-400 px-4 py-2 flex items-center justify-between text-white">
+           <div className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <span className="text-[11px] font-black uppercase tracking-wider">Project Management Mode</span>
+           </div>
+           {post.applications?.length > 0 && (
+             <button 
+                onClick={() => setShowApplicants(true)}
+                className="bg-white text-orange-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter hover:bg-orange-50 transition-colors shadow-sm"
+             >
+                {post.applications.length} Interested Labours • Review Now
+             </button>
+           )}
+        </div>
+      )}
+
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${author?._id}`} className="group relative">
+          <Link to={`/profile/${author?._id || author}`} className="group relative">
             <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:border-orange-500 transition-colors">
-              {author?.avatar ? (
-                <img src={resolveAvatarUrl(author.avatar)} alt={author.name} className="w-full h-full object-cover" />
+              {author?.profileImage || author?.avatar ? (
+                <img src={resolveAvatarUrl(author.profileImage || author.avatar)} alt={author?.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
+                <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold uppercase">
                   {author?.name?.charAt(0) || 'U'}
                 </div>
               )}
@@ -76,19 +134,19 @@ export default function PostCard({ post }) {
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <Link to={`/profile/${author?._id}`} className="font-bold text-gray-900 hover:text-orange-600 transition-colors">
-                {author?.name}
+              <Link to={`/profile/${author?._id || author}`} className="font-bold text-gray-900 hover:text-orange-600 transition-colors">
+                {author?.name || 'Infralink User'}
               </Link>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 uppercase tracking-wider">
-                {author?.role}
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 uppercase tracking-widest">
+                {author?.role || 'User'}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 mt-0.5 uppercase tracking-tight">
               <Clock className="w-3 h-3" />
               <span>{timeAgo}</span>
               {post.location && (
                 <>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-gray-300 px-1">•</span>
                   <MapPin className="w-3 h-3 text-red-400" />
                   <span>{post.location}</span>
                 </>
@@ -101,17 +159,88 @@ export default function PostCard({ post }) {
         </button>
       </div>
 
+      {/* Project-Specific Actions Bar (Call to Action) */}
+      {post.projectName && !isOwner && ['labour', 'worker'].includes(currentUser?.role) && (
+        <div className="px-4 pb-2">
+          {localHasApplied ? (
+            <div className={`w-full py-3 px-4 rounded-xl flex items-center justify-between border ${
+              localAppStatus === 'accepted' ? 'border-green-100 bg-green-50 text-green-700' : 
+              localAppStatus === 'rejected' ? 'border-red-100 bg-red-50 text-red-600' :
+              'border-orange-100 bg-orange-50 text-orange-700'
+            }`}>
+               <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-xs font-black uppercase tracking-wider">Interest Sent: {localAppStatus}</span>
+               </div>
+               {localAppStatus === 'pending' && <span className="text-[10px] font-bold italic">Owner is reviewing</span>}
+               {localAppStatus === 'accepted' && (
+                 <button className="bg-green-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-green-700">Open Chat</button>
+               )}
+            </div>
+          ) : (
+            <button 
+              onClick={handleApply}
+              disabled={isApplying}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isApplying ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                <>
+                  <ArrowRight className="w-4 h-4" />
+                  Apply for this Project
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
+
+
       {/* Post Content */}
       <div className="px-4 pb-3">
+
         {post.projectName && (
-            <div className="mb-2 text-sm font-semibold text-orange-600 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                Project: {post.projectName}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <div className="bg-orange-50 px-3 py-1 rounded-lg border border-orange-100 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-orange-600" />
+              <span className="text-xs font-bold text-orange-900">Project: {post.projectName}</span>
             </div>
+            {post.budgetRange && (
+              <div className="bg-green-50 px-3 py-1 rounded-lg border border-green-100 flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-green-600" />
+                <span className="text-xs font-bold text-green-900">{post.budgetRange}</span>
+              </div>
+            )}
+            {post.duration && (
+              <div className="bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-xs font-bold text-blue-900">{post.duration}</span>
+              </div>
+            )}
+          </div>
         )}
+
+        {/* Role Specific Quick Specs (Horizontal scrollable or flex) */}
+        {post.roleSpecificDetails && Object.keys(post.roleSpecificDetails).length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {Object.entries(post.roleSpecificDetails).slice(0, 3).map(([key, value]) => (
+              value && (
+                <div key={key} className="bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-tighter">{key}:</span>
+                  <span className="text-[11px] font-black text-indigo-900">{value}</span>
+                </div>
+              )
+            ))}
+            {Object.keys(post.roleSpecificDetails).length > 3 && (
+              <span className="text-[10px] text-gray-400 font-bold self-center">+ More specs</span>
+            )}
+          </div>
+        )}
+
         <p className="text-gray-800 leading-relaxed text-sm lg:text-base whitespace-pre-wrap">
           {displayContent}
         </p>
+
         {post.content.length > contentThreshold && (
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
@@ -248,6 +377,106 @@ export default function PostCard({ post }) {
           </div>
         </div>
       )}
+      {/* Project Applicants Modal (Owner Only) */}
+      {showApplicants && isOwner && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                 <div>
+                    <h3 className="text-lg font-black text-gray-900 uppercase tracking-tighter">Project Interests</h3>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{post.projectName}</p>
+                 </div>
+                 <button 
+                    onClick={() => setShowApplicants(false)}
+                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                 >
+                    <X className="w-5 h-5 text-gray-400" />
+                 </button>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                 {post.applications?.length > 0 ? (
+                    post.applications.map((app) => {
+                       const applicant = app.user;
+                       const status = app.status;
+                       
+                       return (
+                          <div key={app._id} className="bg-gray-50/50 border border-gray-100 p-4 rounded-2xl flex items-center justify-between group hover:border-orange-200 transition-colors">
+                             <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:border-orange-500 transition-colors">
+                                   {applicant?.profileImage || applicant?.avatar ? (
+                                     <img src={resolveAvatarUrl(applicant.profileImage || applicant.avatar)} className="w-full h-full object-cover" />
+                                   ) : (
+                                     <div className="w-full h-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold uppercase">
+                                       {applicant?.name?.charAt(0) || '?'}
+                                     </div>
+                                   )}
+                                </div>
+                                <div>
+                                   <p className="font-bold text-gray-900 leading-tight">{applicant?.name}</p>
+                                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{applicant?.role}</p>
+                                   {status !== 'pending' && (
+                                     <span className={`mt-1 inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                                       status === 'accepted' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                     }`}>
+                                       {status}
+                                     </span>
+                                   )}
+                                </div>
+                             </div>
+
+                             {status === 'pending' && (
+                                <div className="flex flex-col gap-2">
+                                   <button 
+                                      onClick={async () => {
+                                        try {
+                                          await updateApplicationStatus(post._id, app._id, 'accepted');
+                                          toast.success(`Accepted ${applicant.name}`);
+                                        } catch (e) {
+                                          toast.error('Action failed');
+                                        }
+                                      }}
+                                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm"
+                                   >
+                                      Accept
+                                   </button>
+                                   <button 
+                                      onClick={async () => {
+                                        try {
+                                          await updateApplicationStatus(post._id, app._id, 'rejected');
+                                          toast.success(`Denied ${applicant.name}`);
+                                        } catch (e) {
+                                          toast.error('Action failed');
+                                        }
+                                      }}
+                                      className="bg-white border border-red-100 text-red-600 hover:bg-red-50 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm"
+                                   >
+                                      Deny
+                                   </button>
+                                </div>
+                             )}
+
+                             {status === 'accepted' && (
+                               <button className="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-orange-100">Message</button>
+                             )}
+                          </div>
+                       );
+                    })
+                 ) : (
+                    <div className="text-center py-12">
+                       <Users className="w-12 h-12 text-gray-100 mx-auto mb-4" />
+                       <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No interests yet</p>
+                    </div>
+                 )}
+              </div>
+              
+              <div className="p-6 bg-gray-50 border-t border-gray-100">
+                 <p className="text-[10px] text-gray-400 font-medium text-center uppercase tracking-widest">Only Ravi Singhania can manage these requests</p>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }
+

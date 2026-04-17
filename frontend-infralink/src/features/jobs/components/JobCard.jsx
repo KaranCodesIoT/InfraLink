@@ -41,11 +41,21 @@ export default function JobCard({ job: initialJob }) {
   const { toast } = useUIStore();
 
   const isOwner = user && job.client?._id === user._id;
+
+  // Determine if the user's role matches the target job category
+  const isMatchingRole = () => {
+    if (!user) return false;
+    if (job.category === 'labour') return ['labour', 'worker'].includes(user.role);
+    if (job.category === 'contractor') return user.role === 'contractor';
+    if (job.category === 'architect') return user.role === 'architect';
+    return WORKER_ROLES.includes(user.role);
+  };
   
-  // Only non-owners with a WORKER_ROLE can apply
-  const canApply = user && !isOwner && job.status === 'open' && WORKER_ROLES.includes(user.role);
+  // Only non-owners with matching roles can apply
+  const canApply = user && !isOwner && job.status === 'open' && isMatchingRole();
 
   return (
+
     <>
       <div className={`bg-white border rounded-xl p-5 hover:shadow-md transition-all relative ${job.isUrgent ? 'border-orange-300 ring-1 ring-orange-200' : 'border-gray-200'}`}>
         {/* Urgent badge */}

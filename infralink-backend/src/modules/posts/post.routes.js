@@ -23,4 +23,9 @@ router.post('/:postId/comment', postController.addComment);
 // Delete a post
 router.delete('/:postId', postController.deletePost);
 
+// Project Applications
+router.post('/:postId/apply', postController.applyToPost);
+router.patch('/:postId/applications/:applicationId', postController.updateApplicationStatus);
+
+
 export default router;

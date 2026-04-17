@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDirectoryStore, useUIStore, useAuthStore } from '../../../store/index.js';
 import usePostsStore from '../../../store/posts.store.js';
-import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Briefcase, ShieldCheck, PenTool, Pencil, Clock, DollarSign, MessageCircle, Users, CheckCircle2, RefreshCw, ImageIcon, FileText, Heart, Send, ImagePlus, X, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, MapPin, User, Mail, Phone, ArrowLeft, Star, Briefcase, ShieldCheck, PenTool, Pencil, Clock, DollarSign, MessageCircle, Users, CheckCircle2, RefreshCw, ImageIcon, FileText, Heart, Send, ImagePlus, X, PlusCircle, Trash2, Calendar } from 'lucide-react';
 import FollowButton from '../../network/components/FollowButton.jsx';
 import BlockButton from '../../network/components/BlockButton.jsx';
 import useNetworkStore from '../../../store/network.store.js';
@@ -42,7 +42,19 @@ export default function ContractorProfile() {
   
   // Create Post State
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [newPostData, setNewPostData] = useState({ content: '', projectName: '', location: '', image: null });
+  const [currentStep, setCurrentStep] = useState(1);
+  const [newPostData, setNewPostData] = useState({ 
+    content: '', 
+    projectName: '', 
+    location: '', 
+    image: null,
+    budgetRange: '',
+    startDate: '',
+    duration: '',
+    requiredWorkers: '',
+    contactOption: 'In-App Message',
+    roleSpecificDetails: {}
+  });
   const [isPosting, setIsPosting] = useState(false);
   
   useEffect(() => {
@@ -73,7 +85,9 @@ export default function ContractorProfile() {
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
+    if (currentStep !== 2) return;
     if (!newPostData.content && !newPostData.image) return toast.error('Post content or image is required');
+
     setIsPosting(true);
     try {
       const formData = new FormData();
@@ -81,10 +95,33 @@ export default function ContractorProfile() {
       if (newPostData.projectName) formData.append('projectName', newPostData.projectName);
       if (newPostData.location) formData.append('location', newPostData.location);
       if (newPostData.image) formData.append('image', newPostData.image);
+      
+      // New fields
+      if (newPostData.budgetRange) formData.append('budgetRange', newPostData.budgetRange);
+      if (newPostData.startDate) formData.append('startDate', newPostData.startDate);
+      if (newPostData.duration) formData.append('duration', newPostData.duration);
+      if (newPostData.requiredWorkers) formData.append('requiredWorkers', newPostData.requiredWorkers);
+      if (newPostData.contactOption) formData.append('contactOption', newPostData.contactOption);
+      
+      // Role-specific details as JSON
+      formData.append('roleSpecificDetails', JSON.stringify(newPostData.roleSpecificDetails));
+
       await createPost(formData);
-      toast.success('Post created successfully!');
+      toast.success('Professional post created successfully!');
       setIsPostModalOpen(false);
-      setNewPostData({ content: '', projectName: '', location: '', image: null });
+      setCurrentStep(1);
+      setNewPostData({ 
+        content: '', 
+        projectName: '', 
+        location: '', 
+        image: null,
+        budgetRange: '',
+        startDate: '',
+        duration: '',
+        requiredWorkers: '',
+        contactOption: 'In-App Message',
+        roleSpecificDetails: {}
+      });
     } catch (err) {
       toast.error(err?.message || 'Error creating post');
     } finally {
@@ -462,15 +499,66 @@ export default function ContractorProfile() {
                   {/* Post Content */}
                   <div className="p-5 md:p-6 space-y-4">
                     {(post.projectName || post.location) && (
-                      <div className="bg-gray-50 p-4 rounded-2xl inline-block mb-1">
-                        {post.projectName && <h5 className="font-bold text-gray-900">{post.projectName}</h5>}
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        {post.projectName && (
+                          <div className="bg-orange-50 px-4 py-2 rounded-xl border border-orange-100">
+                             <h5 className="font-bold text-orange-900 text-sm">{post.projectName}</h5>
+                          </div>
+                        )}
                         {post.location && (
-                          <p className="text-xs text-gray-500 flex items-center mt-1">
-                            <MapPin className="w-3 h-3 mr-1" /> {post.location}
-                          </p>
+                          <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 flex items-center">
+                            <MapPin className="w-3 h-3 mr-1.5 text-gray-400" /> 
+                            <span className="text-xs font-bold text-gray-600">{post.location}</span>
+                          </div>
                         )}
                       </div>
                     )}
+
+                    {/* Rich Project Details Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                      {post.budgetRange && (
+                        <div className="bg-white p-3 rounded-2xl border border-gray-50 shadow-sm">
+                          <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-1">Budget</p>
+                          <p className="text-sm font-bold text-gray-900">{post.budgetRange}</p>
+                        </div>
+                      )}
+                      {post.duration && (
+                        <div className="bg-white p-3 rounded-2xl border border-gray-50 shadow-sm">
+                          <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-1">Duration</p>
+                          <p className="text-sm font-bold text-gray-900">{post.duration}</p>
+                        </div>
+                      )}
+                      {post.startDate && (
+                        <div className="bg-white p-3 rounded-2xl border border-gray-50 shadow-sm">
+                          <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-1">Start Date</p>
+                          <p className="text-sm font-bold text-gray-900">{new Date(post.startDate).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                      {post.requiredWorkers > 0 && (
+                        <div className="bg-white p-3 rounded-2xl border border-gray-50 shadow-sm">
+                          <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-1">Workers</p>
+                          <p className="text-sm font-bold text-gray-900">{post.requiredWorkers} Required</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Role Specific Tech Specs */}
+                    {post.roleSpecificDetails && Object.keys(post.roleSpecificDetails).length > 0 && (
+                      <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 mb-6">
+                        <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-3">Technical Specifications</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                          {Object.entries(post.roleSpecificDetails).map(([key, value]) => (
+                            value && (
+                              <div key={key} className="flex items-center justify-between py-1 border-b border-blue-100/30">
+                                <span className="text-[11px] font-bold text-blue-800 uppercase tracking-tight">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                <span className="text-sm font-black text-blue-900">{value}</span>
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     
                     <p className="text-gray-800 text-sm md:text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
 
@@ -567,58 +655,303 @@ export default function ContractorProfile() {
 
       {/* Post Modal */}
       {isPostModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900">Create New Post</h3>
-              <button onClick={() => setIsPostModalOpen(false)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-all">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-300 border border-gray-100">
+            {/* Header */}
+            <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gray-50/50">
+              <div>
+                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Create Professional Post</h3>
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1 opacity-60">Step {currentStep} of 2</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsPostModalOpen(false);
+                  setCurrentStep(1);
+                }} 
+                className="bg-white text-gray-400 hover:text-gray-900 p-2.5 rounded-2xl shadow-sm border border-gray-100 transition-all hover:scale-110 active:scale-95"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <form onSubmit={handlePostSubmit} className="p-6 space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Project Image</label>
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImagePlus className="w-8 h-8 mb-3 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500 font-semibold">Click to upload image</p>
-                      <p className="text-xs text-gray-500">{newPostData.image?.name || 'PNG, JPG, JPEG (Max 5MB)'}</p>
+            <form onSubmit={handlePostSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              {currentStep === 1 ? (
+                /* STEP 1: COMMON FIELDS */
+                <div className="space-y-6 animate-in slide-in-from-left-5 duration-300">
+                  <div className="group">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Project Image</label>
+                    <div className="flex items-center justify-center w-full">
+                      <label className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300 ${newPostData.image ? 'border-orange-500 bg-orange-50/30' : 'border-gray-200 bg-gray-50/50 hover:bg-gray-100 hover:border-gray-300'}`}>
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
+                          {newPostData.image ? (
+                            <>
+                              <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-3 text-orange-600">
+                                <ImagePlus className="w-8 h-8" />
+                              </div>
+                              <p className="text-sm text-gray-900 font-bold truncate max-w-xs">{newPostData.image.name}</p>
+                              <p className="text-[10px] text-orange-600 font-bold mt-1 uppercase tracking-tighter">Click to change</p>
+                            </>
+                          ) : (
+                            <>
+                              <ImagePlus className="w-10 h-10 mb-3 text-gray-300 group-hover:text-orange-400 transition-colors" />
+                              <p className="text-sm text-gray-500 font-bold">Click to upload project photo</p>
+                              <p className="text-[10px] text-gray-400 font-medium mt-1">PNG, JPG, JPEG (Max 5MB)</p>
+                            </>
+                          )}
+                        </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => setNewPostData({ ...newPostData, image: e.target.files[0] })} />
+                      </label>
                     </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => setNewPostData({ ...newPostData, image: e.target.files[0] })} />
-                  </label>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Project Name</label>
-                  <input type="text" value={newPostData.projectName} onChange={(e) => setNewPostData({ ...newPostData, projectName: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" placeholder="e.g. Modern Villa" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Location</label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
-                    <input type="text" value={newPostData.location} onChange={(e) => setNewPostData({ ...newPostData, location: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 focus:ring-2 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" placeholder="City, State" />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="group">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Project Title *</label>
+                      <input 
+                        required
+                        type="text" 
+                        value={newPostData.projectName} 
+                        onChange={(e) => setNewPostData({ ...newPostData, projectName: e.target.value })} 
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all placeholder:text-gray-300" 
+                        placeholder="e.g. Modern Villa Wiring" 
+                      />
+                    </div>
+                    <div className="group">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Location *</label>
+                      <div className="relative">
+                        <MapPin className="w-4 h-4 text-gray-300 absolute left-4 top-[1.1rem] group-focus-within:text-orange-500 transition-colors" />
+                        <input 
+                          required
+                          type="text" 
+                          value={newPostData.location} 
+                          onChange={(e) => setNewPostData({ ...newPostData, location: e.target.value })} 
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-11 pr-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all placeholder:text-gray-300" 
+                          placeholder="City, State" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="group">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Budget Range</label>
+                      <div className="relative">
+                        <DollarSign className="w-4 h-4 text-gray-300 absolute left-4 top-[1.1rem]" />
+                        <input 
+                          type="text" 
+                          value={newPostData.budgetRange} 
+                          onChange={(e) => setNewPostData({ ...newPostData, budgetRange: e.target.value })} 
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-11 pr-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" 
+                          placeholder="e.g. ₹50k - ₹1L" 
+                        />
+                      </div>
+                    </div>
+                    <div className="group">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Start Date</label>
+                      <div className="relative">
+                        <Calendar className="w-4 h-4 text-gray-300 absolute left-4 top-[1.1rem]" />
+                        <input 
+                          type="date" 
+                          value={newPostData.startDate} 
+                          onChange={(e) => setNewPostData({ ...newPostData, startDate: e.target.value })} 
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-11 pr-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="group">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Duration</label>
+                      <div className="relative">
+                        <Clock className="w-4 h-4 text-gray-300 absolute left-4 top-[1.1rem]" />
+                        <input 
+                          type="text" 
+                          value={newPostData.duration} 
+                          onChange={(e) => setNewPostData({ ...newPostData, duration: e.target.value })} 
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-11 pr-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" 
+                          placeholder="e.g. 2 Weeks / 1 Month" 
+                        />
+                      </div>
+                    </div>
+                    <div className="group">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Required Workers</label>
+                      <div className="relative">
+                        <Users className="w-4 h-4 text-gray-300 absolute left-4 top-[1.1rem]" />
+                        <input 
+                          type="number" 
+                          value={newPostData.requiredWorkers} 
+                          onChange={(e) => setNewPostData({ ...newPostData, requiredWorkers: e.target.value })} 
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-11 pr-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" 
+                          placeholder="Total manpower" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="group">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Description / Caption *</label>
+                    <textarea 
+                      required
+                      rows="4" 
+                      value={newPostData.content} 
+                      onChange={(e) => setNewPostData({ ...newPostData, content: e.target.value })} 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-3xl p-5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all placeholder:text-gray-300 resize-none" 
+                      placeholder="Describe the project scope, materials used, or any special requirements..."
+                    ></textarea>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* STEP 2: ROLE-SPECIFIC FIELDS */
+                <div className="space-y-6 animate-in slide-in-from-right-5 duration-300">
+                  <div className="p-6 bg-orange-50/50 rounded-[2rem] border border-orange-100/50 mb-4">
+                    <div className="flex items-center gap-3 mb-2">
+                       <span className="p-2 bg-orange-100 rounded-xl text-orange-600">
+                          <PlusCircle className="w-5 h-5" />
+                       </span>
+                       <div>
+                          <h4 className="font-black text-gray-900 text-sm">{selectedProfessional.contractorType || 'Contractor'} Specifics</h4>
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Help clients understand your technical expertise</p>
+                       </div>
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Caption</label>
-                <textarea rows="3" value={newPostData.content} onChange={(e) => setNewPostData({ ...newPostData, content: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all" placeholder="What's an update on the project?"></textarea>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Render dynamic fields based on contractorType */}
+                    {(() => {
+                      const role = selectedProfessional.contractorType || '';
+                      // Define role specific fields inline for clarity
+                      const fieldsByRole = {
+                        'Electrical Contractor': [
+                          { key: 'wiringType', label: 'Wiring Type', placeholder: 'concealed / open' },
+                          { key: 'load', label: 'Load Capacity (kW)', placeholder: 'e.g. 10kW' },
+                          { key: 'buildingType', label: 'Building Type', placeholder: 'Residential / Commercial' },
+                          { key: 'safetySystem', label: 'Safety Requirements', placeholder: 'Earthing / RCCB info' }
+                        ],
+                        'Plumbing Contractor': [
+                          { key: 'pipeMaterial', label: 'Pipe Material', placeholder: 'PVC, CPVC, GI' },
+                          { key: 'systemType', label: 'Water System', placeholder: 'e.g. Direct / Tank' },
+                          { key: 'bathrooms', label: 'Units (Baths/Kitchens)', placeholder: 'e.g. 5 units' },
+                          { key: 'drainage', label: 'Drainage Work?', placeholder: 'Yes / No' }
+                        ],
+                        'Civil Contractor': [
+                          { key: 'structure', label: 'Structure Type', placeholder: 'RCC / Steel' },
+                          { key: 'floors', label: 'Number of Floors', placeholder: 'e.g. G+2' },
+                          { key: 'area', label: 'Area (sq ft)', placeholder: 'e.g. 2000' },
+                          { key: 'material', label: 'Material Provided?', placeholder: 'Labour only / With Mat' }
+                        ],
+                        'Painting Contractor': [
+                          { key: 'areaSqft', label: 'Surface Area (sq ft)', placeholder: 'e.g. 5000' },
+                          { key: 'application', label: 'Application', placeholder: 'Interior / Exterior' },
+                          { key: 'paintType', label: 'Paint Quality', placeholder: 'Emulsion / Texture' }
+                        ],
+                        'Carpentry Contractor': [
+                          { key: 'furnitureType', label: 'Furniture Type', placeholder: 'Custom / Modular' },
+                          { key: 'unitCount', label: 'Number of Units', placeholder: 'e.g. 3 Wardrobes' },
+                          { key: 'designType', label: 'Design Required?', placeholder: '2D / 3D Design info' }
+                        ],
+                        'Tiles & Marble Contractor': [
+                          { key: 'flooringArea', label: 'Area (sq ft)', placeholder: 'e.g. 1200' },
+                          { key: 'tileType', label: 'Material Type', placeholder: 'Vitrified / Italian Marble' },
+                          { key: 'matProvided', label: 'Supply Status', placeholder: 'Only Labour / Both' }
+                        ],
+                        'HVAC Contractor (AC/Ventilation)': [
+                          { key: 'acType', label: 'AC System', placeholder: 'Split / Centralized / VRV' },
+                          { key: 'coverageArea', label: 'Coverage (sq ft)', placeholder: 'e.g. 2500' },
+                          { key: 'serviceType', label: 'Service Type', placeholder: 'Installation / AMC' }
+                        ],
+                        'Fire Safety Contractor': [
+                          { key: 'bldgType', label: 'Building Category', placeholder: 'High-rise / Warehouse' },
+                          { key: 'systems', label: 'Required systems', placeholder: 'Sprinkler / Hydrant' }
+                        ],
+                        'MEP Contractor (Mechanical, Electrical, Plumbing)': [
+                          { key: 'scope', label: 'Project Scope', placeholder: 'Full MEP / Partial' },
+                          { key: 'projSize', label: 'Project Size', placeholder: 'Small / Medium / Mega' },
+                          { key: 'integration', label: 'Integration needed?', placeholder: 'Yes / No' }
+                        ]
+                      };
 
-              <div className="pt-2">
-                <button type="submit" disabled={isPosting || (!newPostData.content && !newPostData.image)} className="w-full bg-orange-600 text-white rounded-xl py-3 font-bold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center">
-                  {isPosting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : 'Share Post'}
-                </button>
+                      const currentFields = fieldsByRole[role] || [
+                        { key: 'experienceRequired', label: 'Expertise Level', placeholder: 'e.g. Advanced' },
+                        { key: 'specialTools', label: 'Special Tools Used', placeholder: 'e.g. Laser Level' }
+                      ];
+
+                      return currentFields.map((f) => (
+                        <div key={f.key} className="group">
+                          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">{f.label}</label>
+                          <input 
+                            type="text" 
+                            value={newPostData.roleSpecificDetails[f.key] || ''} 
+                            onChange={(e) => setNewPostData({ 
+                              ...newPostData, 
+                              roleSpecificDetails: { ...newPostData.roleSpecificDetails, [f.key]: e.target.value } 
+                            })} 
+                            className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all placeholder:text-gray-300" 
+                            placeholder={f.placeholder} 
+                          />
+                        </div>
+                      ));
+                    })()}
+
+                    <div className="group md:col-span-2">
+                       <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-orange-600 transition-colors">Contact / Apply Preference</label>
+                       <select 
+                          value={newPostData.contactOption}
+                          onChange={(e) => setNewPostData({ ...newPostData, contactOption: e.target.value })}
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-4 focus:ring-orange-100 focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer"
+                       >
+                          <option value="In-App Message">Direct Message (In-App)</option>
+                          <option value="Phone Call">Phone Call</option>
+                          <option value="WhatsApp">WhatsApp Message</option>
+                          <option value="Visit Site">Visit My Office/Site</option>
+                       </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation Buttons */}
+              <div className="flex gap-4 pt-6 border-t border-gray-100 mt-4">
+                {currentStep === 2 && (
+                  <button 
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="flex-1 bg-white border border-gray-200 text-gray-600 rounded-2xl py-4 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95"
+                  >
+                    Back to Basic
+                  </button>
+                )}
+                
+                {currentStep === 1 ? (
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (!newPostData.projectName || !newPostData.location || !newPostData.content) {
+                        return toast.error('Please fill required fields (Title, Location, Content)');
+                      }
+                      setCurrentStep(2);
+                    }}
+
+                    className="flex-1 bg-gray-900 text-white rounded-2xl py-4 font-black text-xs uppercase tracking-widest hover:bg-black transition-all hover:shadow-xl active:scale-95 flex justify-center items-center gap-2"
+                  >
+                    Next: Technical Details <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </button>
+                ) : (
+                  <button 
+                    type="submit" 
+                    disabled={isPosting} 
+                    className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-2xl py-4 font-black text-xs uppercase tracking-widest shadow-[0_10px_20px_rgba(234,88,12,0.3)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.4)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                  >
+                    {isPosting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : '🚀 Publish Project Post'}
+                  </button>
+                )}
               </div>
             </form>
           </div>
         </div>
       )}
+
 
     </div>
   );
