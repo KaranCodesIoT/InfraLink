@@ -30,6 +30,9 @@ import ContractorOnboarding from '../features/contractors/pages/ContractorOnboar
 import SupplierOnboarding from '../features/suppliers/pages/SupplierOnboarding.jsx';
 import ContractorProfile from '../features/directory/pages/ContractorProfile.jsx';
 import ContractorDirectory from '../features/directory/pages/ContractorDirectory.jsx';
+import BuilderDirectory from '../features/directory/pages/BuilderDirectory.jsx';
+import BuilderProfile from '../features/directory/pages/BuilderProfile.jsx';
+import SupplierProfile from '../features/directory/pages/SupplierProfile.jsx';
 import Messages from '../features/messaging/pages/Messages.jsx';
 import NetworkHub from '../features/network/pages/NetworkHub.jsx';
 import PublicProfile from '../features/profile/pages/PublicProfile.jsx';

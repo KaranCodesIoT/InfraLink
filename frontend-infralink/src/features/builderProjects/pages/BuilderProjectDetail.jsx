@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Maximize2, MessageSquare, LayoutDashboard, Briefcase } from 'lucide-react';
+import { Building2, MapPin, IndianRupee, CalendarDays, ShieldCheck, CheckCircle, Image as ImageIcon, Send, Loader2, Edit3, Check, X, ArrowLeft, Maximize2, MessageSquare, LayoutDashboard, Briefcase, Settings, Trash2 } from 'lucide-react';
 import useAuthStore from '../../../store/auth.store';
 import { getOrCreateConversation } from '../../messaging/services/message.service.js';
 import useBuilderProjectStore from '../../../store/builderProject.store';

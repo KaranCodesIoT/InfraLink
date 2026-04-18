@@ -105,12 +105,7 @@ export default function AssistantVoiceControl({
         audioRef.current.play().catch(e => console.warn('TTS autoplay blocked:', e));
     }, [language, apiBase]);
 
-    // Auto-play assistant reply
-    useEffect(() => {
-        if (lastAssistantReply) {
-            playResponse(lastAssistantReply);
-        }
-    }, [lastAssistantReply, playResponse]);
+    // NOTE: Auto-play removed — TTS only plays when user explicitly triggers it
 
     // Cleanup
     useEffect(() => {
