@@ -84,8 +84,7 @@ export const uploadAvatar = async (id, imageBuffer) => {
     const filePath = path.join(PUBLIC_DIR, filename);
     fs.writeFileSync(filePath, imageBuffer);
 
-    const port = process.env.PORT || 5000;
-    const avatarUrl = `http://localhost:${port}/uploads/avatars/${filename}`;
+    const avatarUrl = `/uploads/avatars/${filename}`;
     const user = await User.findByIdAndUpdate(
         id,
         { avatar: avatarUrl },
@@ -151,8 +150,7 @@ export const uploadResume = async (id, fileBuffer, originalName) => {
     const filePath = path.join(RESUME_DIR, filename);
     fs.writeFileSync(filePath, fileBuffer);
 
-    const port = process.env.PORT || 5000;
-    const resumeUrl = `http://localhost:${port}/uploads/resumes/${filename}`;
+    const resumeUrl = `/uploads/resumes/${filename}`;
     const user = await User.findByIdAndUpdate(
         id,
         { resume: resumeUrl },
