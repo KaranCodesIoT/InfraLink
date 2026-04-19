@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, LayoutDashboard, Briefcase, MessageSquare, Bell,
@@ -29,13 +29,29 @@ const NAV_ITEMS = [
 export default function DashboardLayout() {
   const { user, logout, role } = useAuth();
   const { unreadCount } = useNotificationStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { sidebarOpen, toggleSidebar, setSidebarOpen } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const POST_ROLES = ['contractor', 'builder', 'engineer', 'architect'];
   const canPost = POST_ROLES.includes(role);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    
+    // Check on mount as well to ensure it syncs correctly
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setSidebarOpen]);
 
   const handleLogout = async () => {
     await logout();

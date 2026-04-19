@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const useUIStore = create((set) => ({
   isLoading: false,
-  sidebarOpen: true,
+  sidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 1024 : true,
   toasts: [],
 
   setLoading: (isLoading) => set({ isLoading }),
