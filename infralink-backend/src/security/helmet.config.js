@@ -9,11 +9,11 @@ const helmetOptions = {
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", 'https://fonts.googleapis.com'],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-            imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
-            scriptSrc: ["'self'"],
-            connectSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://images.unsplash.com', 'blob:'],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            connectSrc: ["'self'", 'https://infralink-production.up.railway.app', 'https://infra-link-sepia.vercel.app', 'wss://infralink-production.up.railway.app'],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
         },
