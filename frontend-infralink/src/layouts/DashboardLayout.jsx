@@ -47,17 +47,32 @@ export default function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex relative">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-200 text-gray-800 flex flex-col transition-all duration-300 ease-in-out shrink-0 flex-shrink-0`}
+        className={`fixed lg:static inset-y-0 left-0 z-50 bg-white border-r border-gray-200 text-gray-800 flex flex-col transition-all duration-300 ease-in-out shrink-0 
+          ${sidebarOpen 
+            ? 'translate-x-0 w-64' 
+            : '-translate-x-full lg:translate-x-0 lg:w-16 w-64'
+          }
+        `}
       >
         {/* Logo */}
         <div className="flex items-center gap-3 h-16 px-4 border-b border-gray-200">
           <div className="bg-orange-600 p-2 rounded-lg flex-shrink-0">
             <Building2 className="w-5 h-5 text-white" />
           </div>
-          {sidebarOpen && <span className="text-lg font-bold text-gray-900">InfraLink</span>}
+          <span className={`text-lg font-bold text-gray-900 transition-opacity duration-300 ${!sidebarOpen ? 'lg:hidden' : 'block'}`}>
+            InfraLink
+          </span>
         </div>
 
         {/* Navigation */}
@@ -69,6 +84,7 @@ export default function DashboardLayout() {
                 key={item.path}
                 to={item.path}
                 title={!sidebarOpen ? item.label : undefined}
+                onClick={() => { if (window.innerWidth < 1024) toggleSidebar() }}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-orange-50 text-orange-600'
@@ -76,22 +92,23 @@ export default function DashboardLayout() {
                 }`}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
-                {sidebarOpen && <span>{item.label}</span>}
+                <span className={`${!sidebarOpen ? 'lg:hidden' : 'block'}`}>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
         {/* Search shortcut */}
-        {sidebarOpen && (
+        <div className={`${!sidebarOpen ? 'lg:hidden' : 'block'}`}>
           <Link
             to={ROUTES.SEARCH}
+            onClick={() => { if (window.innerWidth < 1024) toggleSidebar() }}
             className="mx-4 mb-4 flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-lg text-gray-500 text-sm hover:bg-gray-100 hover:text-gray-800 transition-colors shadow-sm"
           >
             <Search className="w-4 h-4" />
             <span>Search...</span>
           </Link>
-        )}
+        </div>
       </aside>
 
       {/* Main content */}
