@@ -30,6 +30,7 @@ export default function BuilderProfile() {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [canMessage, setCanMessage] = useState(false);
+  const [ratingLoading, setRatingLoading] = useState(false);
   const prevFollowStatusRef = useRef(null);
   
   const { projects: realTimeProjects, fetchProjects } = useBuilderProjectStore();
