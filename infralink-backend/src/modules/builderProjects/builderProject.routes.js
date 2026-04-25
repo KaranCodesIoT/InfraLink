@@ -4,14 +4,15 @@ import authMiddleware from '../../middleware/auth.middleware.js';
 import requireRole from '../../middleware/role.middleware.js';
 import validate from '../../middleware/validate.middleware.js';
 import { createBuilderProjectSchema, updateBuilderProjectSchema, addUpdateSchema } from './builderProject.validation.js';
+import cacheMiddleware from '../../middleware/cache.middleware.js';
 
 const router = Router();
 
 // Public / any-authenticated reads
-router.get('/', authMiddleware, c.list);
-router.get('/my', authMiddleware, requireRole('builder'), c.getMine);
-router.get('/:id/teams', authMiddleware, c.getTeams);
-router.get('/:id', authMiddleware, c.getById);
+router.get('/', authMiddleware, cacheMiddleware(300), c.list);
+router.get('/my', authMiddleware, c.getMine);
+router.get('/:id/teams', authMiddleware, cacheMiddleware(300), c.getTeams);
+router.get('/:id', authMiddleware, cacheMiddleware(300), c.getById);
 
 // Builder-only writes
 router.post('/', authMiddleware, requireRole('builder'), validate(createBuilderProjectSchema), c.create);
@@ -25,12 +26,12 @@ router.patch('/:id/apply/:applicationId', authMiddleware, requireRole('builder')
 
 // Engagement
 router.post('/:id/like', authMiddleware, c.likeProject);
-router.get('/:id/comments', c.getComments);
+router.get('/:id/comments', cacheMiddleware(300), c.getComments);
 router.post('/:id/comments', authMiddleware, c.addComment);
 
 // ── Dynamic Dashboard & Workflow ─────────────────────────────────────────
 
-router.get('/:id/dashboard', authMiddleware, c.getProjectDashboardData);
+router.get('/:id/dashboard', authMiddleware, cacheMiddleware(300), c.getProjectDashboardData);
 router.patch('/:id/tasks/assign', authMiddleware, requireRole('builder'), c.assignContractor);
 
 // ── Workforce & Labour Management ────────────────────────────────────────

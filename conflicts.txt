@@ -1,0 +1,8 @@
+frontend-infralink/src/features/builderProjects/pages/BuilderProjectDetail.jsx
+frontend-infralink/src/features/builderProjects/pages/Projects.jsx
+frontend-infralink/src/features/directory/pages/ProfessionalDirectory.jsx
+frontend-infralink/src/features/directory/pages/WorkerDirectoryDashboard.jsx
+frontend-infralink/src/layouts/DashboardLayout.jsx
+frontend-infralink/src/routes/index.jsx
+frontend-infralink/src/store/builderProject.store.js
+infralink-backend/src/modules/builderProjects/builderProject.service.js

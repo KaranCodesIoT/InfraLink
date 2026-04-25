@@ -32,7 +32,12 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const url = original?.url || '';
+
+    // Don't attempt token refresh for pre-auth endpoints
+    const isAuthRoute = url.includes('/auth/send-otp') || url.includes('/auth/verify-otp');
+
+    if (error.response?.status === 401 && !original._retry && !isAuthRoute) {
       if (_isRefreshing) {
         return new Promise((resolve, reject) => {
           _failedQueue.push({ resolve, reject });

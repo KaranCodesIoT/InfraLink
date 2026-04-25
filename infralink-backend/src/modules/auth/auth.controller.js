@@ -2,18 +2,18 @@ import * as authService from './auth.service.js';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.utils.js';
 import { HTTP_STATUS } from '../../constants/httpStatus.js';
 
-export const register = async (req, res, next) => {
+export const sendOtp = async (req, res, next) => {
     try {
-        const result = await authService.register(req.body);
-        return sendCreated(res, result, 'Registration successful');
+        const result = await authService.sendOtp(req.body);
+        return sendSuccess(res, result, 'OTP sent successfully');
     } catch (error) {
         next(error);
     }
 };
 
-export const login = async (req, res, next) => {
+export const verifyOtp = async (req, res, next) => {
     try {
-        const result = await authService.login(req.body);
+        const result = await authService.verifyOtp(req.body);
         return sendSuccess(res, result, 'Login successful');
     } catch (error) {
         next(error);

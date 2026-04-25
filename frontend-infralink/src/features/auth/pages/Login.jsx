@@ -12,14 +12,11 @@ export default function Login() {
             <Building2 className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-[#0B1E36]">
           Sign in to your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link to={ROUTES.REGISTER} className="font-medium text-orange-600 hover:text-orange-500">
-            create a new account
-          </Link>
+          Or <Link to={ROUTES.REGISTER} className="font-medium text-orange-600 hover:text-orange-500">create a new account</Link>
         </p>
       </div>
 

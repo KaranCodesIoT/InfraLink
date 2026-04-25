@@ -72,7 +72,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: ROUTES.LOGIN, element: <Login /> },
-      { path: ROUTES.REGISTER, element: <Register /> },
+      { path: ROUTES.REGISTER, element: <Navigate to={ROUTES.LOGIN} replace /> },
     ],
   },
   {

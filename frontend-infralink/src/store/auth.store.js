@@ -6,41 +6,44 @@ import { getErrorMessage } from '../utils/errorHandler.js';
 const useAuthStore = create((set, get) => ({
   user: null,
   isAuthenticated: false,
+  isInitializing: true,
   isLoading: false,
   error: null,
 
   // Restore auth state from stored token on app load
   initAuth: async () => {
     const token = getAccessToken();
-    if (!token) return;
+    if (!token) {
+      set({ isInitializing: false });
+      return;
+    }
     try {
-      set({ isLoading: true });
       const { data } = await api.get('/auth/me');
-      set({ user: data.data, isAuthenticated: true, isLoading: false });
+      set({ user: data.data, isAuthenticated: true, isInitializing: false });
     } catch {
       clearTokens();
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      set({ user: null, isAuthenticated: false, isInitializing: false });
     }
   },
 
-  register: async (payload) => {
+  devOtp: null,
+
+  sendOtp: async (email) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await api.post('/auth/register', payload);
-      const { user, accessToken, refreshToken } = data.data;
-      setTokens(accessToken, refreshToken);
-      set({ user, isAuthenticated: true, isLoading: false });
-      return user;
+      const { data } = await api.post('/auth/send-otp', { email });
+      set({ isLoading: false, devOtp: data.data?.otp || null });
+      return data;
     } catch (e) {
       set({ error: getErrorMessage(e), isLoading: false });
       throw e;
     }
   },
 
-  login: async (payload) => {
+  verifyOtp: async (email, otp) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await api.post('/auth/login', payload);
+      const { data } = await api.post('/auth/verify-otp', { email, otp });
       const { user, accessToken, refreshToken } = data.data;
       setTokens(accessToken, refreshToken);
       set({ user, isAuthenticated: true, isLoading: false });

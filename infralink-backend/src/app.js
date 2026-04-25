@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
 import corsOptions from './config/cors.js';
 import swaggerSpec from './config/swagger.js';
 import loggerMiddleware from './middleware/logger.middleware.js';
@@ -57,6 +58,8 @@ const app = express();
 // Security
 app.use(helmet(helmetOptions));
 app.use(cors(corsOptions));
+
+
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

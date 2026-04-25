@@ -2,11 +2,12 @@ import { Router } from 'express';
 import * as postController from './post.controller.js';
 import authMiddleware from '../../middleware/auth.middleware.js';
 import { uploadSingle } from '../../middleware/upload.middleware.js';
+import cacheMiddleware from '../../middleware/cache.middleware.js';
 
 const router = Router();
 
 // Retrieve user's specific posts
-router.get('/user/:userId', postController.getUserPosts);
+router.get('/user/:userId', cacheMiddleware(300), postController.getUserPosts);
 
 // Require auth beyond here
 router.use(authMiddleware);
