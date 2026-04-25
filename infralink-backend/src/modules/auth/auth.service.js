@@ -215,6 +215,51 @@ export const updateRole = async (userId, data) => {
     };
 };
 
+export const register = async (userData) => {
+    const { email, password, name, phone, location } = userData;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        const err = new Error('User already exists with this email');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    // Create new user
+    const user = new User({
+        email,
+        name,
+        phone,
+        location,
+        role: 'unassigned', // Default role
+        isNewUser: true,
+        provider: 'local'
+    });
+
+    user.password = await hashPassword(password);
+    
+    // Generate tokens
+    const accessToken = signAccessToken({ id: user._id, role: user.role });
+    const refreshToken = signRefreshToken({ id: user._id });
+
+    user.refreshToken = refreshToken;
+    user.lastLogin = new Date();
+    await user.save();
+
+    return {
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isNewUser: user.isNewUser
+        },
+        accessToken,
+        refreshToken
+    };
+};
+
 export const logout = async (userId) => {
     await User.findByIdAndUpdate(userId, { refreshToken: null });
 };

@@ -2,6 +2,15 @@ import * as authService from './auth.service.js';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.utils.js';
 import { HTTP_STATUS } from '../../constants/httpStatus.js';
 
+export const register = async (req, res, next) => {
+    try {
+        const result = await authService.register(req.body);
+        return sendCreated(res, result, 'Account created successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const sendOtp = async (req, res, next) => {
     try {
         const result = await authService.sendOtp(req.body);

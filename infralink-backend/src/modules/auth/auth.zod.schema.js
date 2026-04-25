@@ -35,3 +35,14 @@ export const updateRoleZodSchema = z.object({
   role: z.string({ required_error: 'Role is required' }),
   contractorType: z.string().optional(),
 });
+
+export const registerZodSchema = z.object({
+  name: z.string({ required_error: 'Name is required' }),
+  email: z.string({ required_error: 'Email is required' }).email('Invalid email'),
+  password: z.string({ required_error: 'Password is required' }).min(8),
+  phone: z.string().optional(),
+  location: z.object({
+    city: z.string().optional(),
+    state: z.string().optional(),
+  }).optional(),
+});

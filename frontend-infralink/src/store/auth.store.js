@@ -9,6 +9,21 @@ const useAuthStore = create((set, get) => ({
   isInitializing: true,
   isLoading: false,
   error: null,
+  devOtp: null,
+
+  register: async (userData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post('/auth/register', userData);
+      const { user, accessToken, refreshToken } = data.data;
+      setTokens(accessToken, refreshToken);
+      set({ user, isAuthenticated: true, isLoading: false });
+      return user;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
 
   // Restore auth state from stored token on app load
   initAuth: async () => {
@@ -25,8 +40,6 @@ const useAuthStore = create((set, get) => ({
       set({ user: null, isAuthenticated: false, isInitializing: false });
     }
   },
-
-  devOtp: null,
 
   sendOtp: async (email) => {
     set({ isLoading: true, error: null });

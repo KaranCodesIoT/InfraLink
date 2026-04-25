@@ -5,9 +5,11 @@ import { validateZod } from '../../middleware/validateZod.middleware.js';
 import authMiddleware from '../../middleware/auth.middleware.js';
 import { authLimiter } from '../../middleware/rateLimiter.middleware.js';
 import { refreshTokenSchema } from './auth.validation.js';
-import { sendOtpZodSchema, checkOtpZodSchema, loginZodSchema, googleAuthZodSchema, updateRoleZodSchema } from './auth.zod.schema.js';
+import { sendOtpZodSchema, checkOtpZodSchema, loginZodSchema, googleAuthZodSchema, updateRoleZodSchema, registerZodSchema } from './auth.zod.schema.js';
 
 const router = Router();
+
+router.post('/register', authLimiter, validateZod(registerZodSchema), authController.register);
 
 /**
  * @swagger
