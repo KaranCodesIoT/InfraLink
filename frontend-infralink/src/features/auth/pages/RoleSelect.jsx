@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Hammer, HardHat, Briefcase, HardDriveUpload, Wrench, Package, CheckCircle2 } from 'lucide-react';
+import { Building2, Hammer, HardHat, Briefcase, HardDriveUpload, Wrench, Package, Check, Loader2 } from 'lucide-react';
 import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
 import { CONTRACTOR_TYPES } from '../../../constants/contractorTypes.js';
-import api from '../../../lib/axios.js';
 
 // Individual role — goes straight to dashboard, no profile form
 const INDIVIDUAL_ROLE = 'normal_user';
@@ -14,58 +13,56 @@ const ROLE_OPTIONS = [
   {
     id: 'normal_user',
     title: 'Individual / Homeowner',
-    description: 'Looking to hire professionals for your project.',
+    description: 'Looking to hire professionals for your home project.',
     icon: HardHat,
     color: 'bg-blue-50 text-blue-600 border-blue-200',
     activeColor: 'ring-blue-500 border-blue-500',
+    badge: 'Hire Pros'
   },
   {
     id: 'builder',
     title: 'Builder / Developer',
-    description: 'Managing large construction projects and hiring contractors.',
+    description: 'Manage projects, track site progress and hire teams.',
     icon: Building2,
     color: 'bg-orange-50 text-orange-600 border-orange-200',
     activeColor: 'ring-orange-500 border-orange-500',
+    badge: 'Manage Projects'
   },
   {
     id: 'contractor',
     title: 'Contractor',
-    description: 'Bidding on projects and managing skilled labour.',
+    description: 'Hire workers, manage labour and bid on projects.',
     icon: Briefcase,
     color: 'bg-green-50 text-green-600 border-green-200',
     activeColor: 'ring-green-500 border-green-500',
+    badge: 'Hire Workers'
   },
   {
     id: 'architect',
     title: 'Architect / Engineer',
-    description: 'Providing design and structural engineering services.',
+    description: 'Provide professional design and engineering services.',
     icon: HardDriveUpload,
     color: 'bg-purple-50 text-purple-600 border-purple-200',
     activeColor: 'ring-purple-500 border-purple-500',
+    badge: 'Design'
   },
   {
     id: 'labour',
     title: 'Skilled Labour',
-    description: 'Looking for construction jobs and projects to work on.',
+    description: 'Find daily jobs and long-term construction work.',
     icon: Hammer,
     color: 'bg-yellow-50 text-yellow-600 border-yellow-200',
     activeColor: 'ring-yellow-500 border-yellow-500',
+    badge: 'Find Jobs'
   },
   {
     id: 'supplier',
     title: 'Material Supplier',
-    description: 'Supplying construction materials and equipment.',
+    description: 'Sell construction materials and equipment.',
     icon: Package,
     color: 'bg-teal-50 text-teal-600 border-teal-200',
     activeColor: 'ring-teal-500 border-teal-500',
-  },
-  {
-    id: 'worker',
-    title: 'General Worker',
-    description: 'Looking for general construction and site work.',
-    icon: Wrench,
-    color: 'bg-gray-50 text-gray-600 border-gray-200',
-    activeColor: 'ring-gray-500 border-gray-500',
+    badge: 'Sell Materials'
   },
 ];
 
@@ -76,6 +73,7 @@ export default function RoleSelect() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [contractorType, setContractorType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isIndividual = selectedRole === INDIVIDUAL_ROLE;
 
   const handleContinue = async () => {
     if (!selectedRole) {
@@ -118,8 +116,6 @@ export default function RoleSelect() {
     }
   };
 
-  const isIndividual = selectedRole === INDIVIDUAL_ROLE;
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Progress */}
@@ -151,29 +147,44 @@ export default function RoleSelect() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ROLE_OPTIONS.map((role) => {
-              const isSelected = selectedRole === role.id;
+            {ROLE_OPTIONS.map((option) => {
+              const isSelected = selectedRole === option.id;
               return (
-                <div
-                  key={role.id}
-                  onClick={() => setSelectedRole(role.id)}
-                  className={`relative flex flex-col p-5 cursor-pointer rounded-xl border-2 transition-all duration-150 ${
-                    isSelected ? role.activeColor + ' ring-1' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                  }`}
-                >
-                  {isSelected && (
-                    <CheckCircle2 className="absolute top-3 right-3 w-4 h-4 text-current opacity-90" />
-                  )}
-                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-3 border ${role.color}`}>
-                    <role.icon className="w-5 h-5" />
+                <button
+                key={option.id}
+                onClick={() => setSelectedRole(option.id)}
+                className={`group relative flex flex-col p-6 rounded-2xl border-2 transition-all duration-300 text-left hover:shadow-xl ${
+                  selectedRole === option.id
+                    ? `${option.activeColor} bg-white shadow-lg scale-[1.02]`
+                    : 'border-gray-100 bg-white hover:border-gray-200'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-3 rounded-xl ${option.color} group-hover:scale-110 transition-transform`}>
+                    <option.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">{role.title}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{role.description}</p>
-                  {role.id === INDIVIDUAL_ROLE && (
-                    <span className="mt-2 text-xs text-blue-500 font-medium">→ Goes straight to dashboard</span>
+                  {option.badge && (
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${option.color}`}>
+                      {option.badge}
+                    </span>
                   )}
                 </div>
-              );
+                
+                <h3 className={`text-lg font-bold mb-2 ${selectedRole === option.id ? 'text-gray-900' : 'text-gray-800'}`}>
+                  {option.title}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {option.description}
+                </p>
+
+                {selectedRole === option.id && (
+                  <div className="absolute top-3 right-3">
+                    <div className="bg-orange-600 rounded-full p-1">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  </div>
+                )}
+              </button>);
             })}
           </div>
 
