@@ -5,7 +5,7 @@ import { validateZod } from '../../middleware/validateZod.middleware.js';
 import authMiddleware from '../../middleware/auth.middleware.js';
 import { authLimiter } from '../../middleware/rateLimiter.middleware.js';
 import { refreshTokenSchema } from './auth.validation.js';
-import { sendOtpZodSchema, checkOtpZodSchema, loginZodSchema } from './auth.zod.schema.js';
+import { sendOtpZodSchema, checkOtpZodSchema, loginZodSchema, googleAuthZodSchema, updateRoleZodSchema } from './auth.zod.schema.js';
 
 const router = Router();
 
@@ -38,6 +38,9 @@ router.post('/check-otp', authLimiter, validateZod(checkOtpZodSchema), authContr
  *     security: []
  */
 router.post('/verify-otp', authLimiter, validateZod(loginZodSchema), authController.verifyOtp);
+
+router.post('/google-auth', authLimiter, validateZod(googleAuthZodSchema), authController.googleAuth);
+router.post('/update-role', authMiddleware, validateZod(updateRoleZodSchema), authController.updateRole);
 
 router.post('/refresh', validate(refreshTokenSchema), authController.refreshToken);
 router.post('/logout', authMiddleware, authController.logout);

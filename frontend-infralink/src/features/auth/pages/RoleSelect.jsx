@@ -70,7 +70,7 @@ const ROLE_OPTIONS = [
 ];
 
 export default function RoleSelect() {
-  const { user, initAuth } = useAuthStore();
+  const { user, updateRole } = useAuthStore();
   const { toast } = useUIStore();
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState(null);
@@ -95,8 +95,7 @@ export default function RoleSelect() {
         payload.contractorType = contractorType;
       }
 
-      await api.patch(`/users/${user._id}`, payload);
-      await initAuth();
+      await updateRole(payload);
 
       if (selectedRole === INDIVIDUAL_ROLE) {
         // Individuals skip profile form — go straight to dashboard

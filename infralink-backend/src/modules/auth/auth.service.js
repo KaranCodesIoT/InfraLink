@@ -1,6 +1,28 @@
 import User from '../users/user.model.js';
 import { hashPassword, comparePassword } from '../../utils/encryption.utils.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/token.utils.js';
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+async function verifyGoogleToken(token) {
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        return {
+            email: payload.email,
+            name: payload.name,
+            picture: payload.picture,
+            googleId: payload.sub,
+        };
+    } catch (error) {
+        console.error('Google token verification failed:', error);
+        throw new Error('Invalid Google token');
+    }
+}
 
 import { generateAndSendEmailOtp, verifyEmailOtp as verifyStoredOtp } from './otp.service.js';
 
@@ -120,6 +142,77 @@ export const refreshTokens = async (token) => {
     await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
+};
+
+export const googleAuth = async ({ token }) => {
+    const userData = await verifyGoogleToken(token);
+
+    let user = await User.findOne({ email: userData.email }).select('+password +refreshToken');
+
+    if (!user) {
+        // Create new user if doesn't exist
+        user = await User.create({
+            name: userData.name,
+            email: userData.email,
+            googleId: userData.googleId,
+            profilePic: userData.picture,
+            role: 'unassigned', // Use 'unassigned' or null as per your ROLES constants
+            isNewUser: true,
+            provider: 'google',
+        });
+    } else if (!user.googleId) {
+        // Link Google ID if email matches but registered locally
+        user.googleId = userData.googleId;
+        user.profilePic = userData.picture;
+        user.provider = 'google';
+        await user.save({ validateBeforeSave: false });
+    }
+
+    // Generate JWT tokens
+    const accessToken = signAccessToken({ id: user._id, role: user.role });
+    const refreshToken = signRefreshToken({ id: user._id });
+
+    // Store refresh token
+    user.refreshToken = refreshToken;
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    return {
+        user: { 
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role, 
+            avatar: user.avatar || user.profilePic,
+            isNewUser: user.isNewUser
+        },
+        accessToken,
+        refreshToken,
+    };
+};
+
+export const updateRole = async (userId, data) => {
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { ...data, isNewUser: false },
+        { new: true, runValidators: true }
+    );
+
+    if (!user) {
+        const err = new Error('User not found');
+        err.statusCode = 404;
+        throw err;
+    }
+
+    return {
+        user: { 
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role, 
+            avatar: user.avatar || user.profilePic
+        }
+    };
 };
 
 export const logout = async (userId) => {

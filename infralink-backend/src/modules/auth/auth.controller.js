@@ -48,6 +48,24 @@ export const logout = async (req, res, next) => {
     }
 };
 
+export const googleAuth = async (req, res, next) => {
+    try {
+        const result = await authService.googleAuth(req.body);
+        return sendSuccess(res, result, 'Google authentication successful');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateRole = async (req, res, next) => {
+    try {
+        const result = await authService.updateRole(req.user._id, req.body);
+        return sendSuccess(res, result, 'Role updated successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getMe = (req, res) => {
     return sendSuccess(res, req.user, 'Current user');
 };

@@ -69,6 +69,33 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  googleLogin: async (token) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post('/auth/google-auth', { token });
+      const { user, accessToken, refreshToken } = data.data;
+      setTokens(accessToken, refreshToken);
+      set({ user, isAuthenticated: true, isLoading: false });
+      return user;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
+  updateRole: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data: response } = await api.post('/auth/update-role', data);
+      const { user } = response.data;
+      set({ user, isLoading: false });
+      return user;
+    } catch (e) {
+      set({ error: getErrorMessage(e), isLoading: false });
+      throw e;
+    }
+  },
+
   logout: async () => {
     try {
       await api.post('/auth/logout');

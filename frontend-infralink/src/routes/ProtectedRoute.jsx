@@ -3,7 +3,7 @@ import useAuth from '../hooks/useAuth.js';
 import { ROUTES } from '../constants/routes.js';
 
 export default function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -19,6 +19,13 @@ export default function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
+  }
+
+  // If user is logged in but has no role assigned, force them to select one
+  // Exclude the role selection page itself to avoid infinite redirect loops
+  const hasNoRole = !user?.role || user?.role === 'unassigned';
+  if (hasNoRole && location.pathname !== ROUTES.ROLE_SELECT) {
+    return <Navigate to={ROUTES.ROLE_SELECT} replace />;
   }
 
   return <Outlet />;

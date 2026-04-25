@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../../../store/auth.store.js';
 import useUIStore from '../../../store/ui.store.js';
 import { ROUTES } from '../../../constants/routes.js';
@@ -12,10 +13,31 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   
-  const { sendOtp, checkOtp, verifyOtp, isLoading, error, clearError, devOtp } = useAuthStore();
+  const { sendOtp, checkOtp, verifyOtp, googleLogin, isLoading, error, clearError, devOtp } = useAuthStore();
   const { toast } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    clearError();
+    try {
+      const user = await googleLogin(credentialResponse.credential);
+      toast?.success?.('Logged in with Google!');
+      
+      if (!user.role || user.role === 'unassigned') {
+        navigate(ROUTES.ROLE_SELECT, { replace: true });
+      } else {
+        const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      toast?.error?.('Google login failed');
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast?.error?.('Google login failed');
+  };
 
   // Step 1: Send OTP
   const handleSendOtp = async (e) => {
@@ -191,6 +213,25 @@ export default function LoginForm() {
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign in'}
         </button>
       </form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or continue with</span>
+        </div>
+      </div>
+
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+          theme="outline"
+          width="100%"
+        />
+      </div>
     </div>
   );
 }

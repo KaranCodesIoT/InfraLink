@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema(
     {
         name: { type: String, trim: true },
         email: { type: String, lowercase: true, trim: true, unique: true, sparse: true },
+        googleId: { type: String, unique: true, sparse: true },
+        profilePic: { type: String },
+        provider: { type: String, enum: ['local', 'google'], default: 'local' },
+        isNewUser: { type: Boolean, default: true },
         password: { type: String, select: false },
         role: { type: String, enum: Object.values(ROLES), default: 'unassigned' },
         phone: { type: String, unique: true, sparse: true, trim: true },

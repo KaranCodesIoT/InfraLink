@@ -26,3 +26,12 @@ export const loginZodSchema = z.object({
     .email('Please provide a valid email address'),
   password: z.string({ required_error: 'Password is required' }).min(8, 'Password must be at least 8 characters'),
 });
+
+export const googleAuthZodSchema = z.object({
+  token: z.string({ required_error: 'Google token is required' }),
+});
+
+export const updateRoleZodSchema = z.object({
+  role: z.string({ required_error: 'Role is required' }),
+  contractorType: z.string().optional(),
+});
