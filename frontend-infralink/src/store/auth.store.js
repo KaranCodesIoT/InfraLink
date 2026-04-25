@@ -40,10 +40,25 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  verifyOtp: async (email, otp) => {
+  checkOtp: async (email, otp) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await api.post('/auth/verify-otp', { email, otp });
+      await api.post('/auth/check-otp', { email, otp });
+      set({ isLoading: false });
+      return true;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || 'Invalid or expired OTP',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  verifyOtp: async (email, password) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post('/auth/verify-otp', { email, password });
       const { user, accessToken, refreshToken } = data.data;
       setTokens(accessToken, refreshToken);
       set({ user, isAuthenticated: true, isLoading: false });

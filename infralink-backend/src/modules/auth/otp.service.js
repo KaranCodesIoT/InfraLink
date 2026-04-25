@@ -73,3 +73,38 @@ export const verifyEmailOtp = async (email, otp) => {
         return true;
     }
 };
+
+/**
+ * Mark email as verified temporarily (e.g. 10 minutes)
+ */
+export const markEmailAsVerified = async (email) => {
+    if (isRedisAvailable()) {
+        const redis = getRedisClient();
+        await redis.set(`verified_email_${email}`, 'true', { EX: 600 }); // 10 minutes
+    } else {
+        otpStore.set(`verified_${email}`, { verified: true, expires: Date.now() + 600000 });
+    }
+};
+
+/**
+ * Check if email was verified recently
+ * Deletes the flag upon successful check to prevent reuse
+ */
+export const isEmailVerified = async (email) => {
+    if (isRedisAvailable()) {
+        const redis = getRedisClient();
+        const verified = await redis.get(`verified_email_${email}`);
+        if (verified) {
+            await redis.del(`verified_email_${email}`);
+            return true;
+        }
+        return false;
+    } else {
+        const entry = otpStore.get(`verified_${email}`);
+        if (entry && Date.now() <= entry.expires) {
+            otpStore.delete(`verified_${email}`);
+            return true;
+        }
+        return false;
+    }
+};

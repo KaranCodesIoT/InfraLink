@@ -31,7 +31,7 @@ export const sendOtp = async ({ email }) => {
     };
 };
 
-export const verifyOtp = async ({ email, otp }) => {
+export const checkOtp = async ({ email, otp }) => {
     // Verify OTP against stored OTP
     const isValid = await verifyStoredOtp(email, otp);
     
@@ -42,12 +42,43 @@ export const verifyOtp = async ({ email, otp }) => {
         throw err;
     }
 
+    // Mark email as verified temporarily
+    const { markEmailAsVerified } = await import('./otp.service.js');
+    await markEmailAsVerified(email);
+
+    return { message: 'OTP verified successfully' };
+};
+
+export const verifyOtp = async ({ email, password }) => {
+    // Check if email was verified via OTP
+    const { isEmailVerified } = await import('./otp.service.js');
+    const isVerified = await isEmailVerified(email);
+
+    if (!isVerified) {
+        const err = new Error('Please verify your email with OTP first');
+        err.statusCode = 403;
+        throw err;
+    }
+
     // Find the user (they were created in sendOtp if they didn't exist)
-    const user = await User.findOne({ email }).select('+refreshToken');
+    const user = await User.findOne({ email }).select('+password +refreshToken');
     if (!user) {
         const err = new Error('User not found');
         err.statusCode = 404;
         throw err;
+    }
+
+    // Check or set password
+    if (user.password) {
+        const isMatch = await comparePassword(password, user.password);
+        if (!isMatch) {
+            const err = new Error('Incorrect password');
+            err.statusCode = 401;
+            throw err;
+        }
+    } else {
+        // If they don't have a password yet (new user), save this as their password
+        user.password = await hashPassword(password);
     }
 
     // Generate JWT tokens

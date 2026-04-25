@@ -5,7 +5,7 @@ import { validateZod } from '../../middleware/validateZod.middleware.js';
 import authMiddleware from '../../middleware/auth.middleware.js';
 import { authLimiter } from '../../middleware/rateLimiter.middleware.js';
 import { refreshTokenSchema } from './auth.validation.js';
-import { sendOtpZodSchema, verifyOtpZodSchema } from './auth.zod.schema.js';
+import { sendOtpZodSchema, checkOtpZodSchema, loginZodSchema } from './auth.zod.schema.js';
 
 const router = Router();
 
@@ -13,7 +13,7 @@ const router = Router();
  * @swagger
  * /auth/send-otp:
  *   post:
- *     summary: Send OTP to phone number
+ *     summary: Send OTP to email
  *     tags: [Auth]
  *     security: []
  */
@@ -21,13 +21,23 @@ router.post('/send-otp', authLimiter, validateZod(sendOtpZodSchema), authControl
 
 /**
  * @swagger
- * /auth/verify-otp:
+ * /auth/check-otp:
  *   post:
- *     summary: Verify OTP and login
+ *     summary: Verify OTP without logging in
  *     tags: [Auth]
  *     security: []
  */
-router.post('/verify-otp', authLimiter, validateZod(verifyOtpZodSchema), authController.verifyOtp);
+router.post('/check-otp', authLimiter, validateZod(checkOtpZodSchema), authController.checkOtp);
+
+/**
+ * @swagger
+ * /auth/verify-otp:
+ *   post:
+ *     summary: Login with password after OTP verification
+ *     tags: [Auth]
+ *     security: []
+ */
+router.post('/verify-otp', authLimiter, validateZod(loginZodSchema), authController.verifyOtp);
 
 router.post('/refresh', validate(refreshTokenSchema), authController.refreshToken);
 router.post('/logout', authMiddleware, authController.logout);

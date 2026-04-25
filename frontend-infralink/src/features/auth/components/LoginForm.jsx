@@ -6,34 +6,60 @@ import { ROUTES } from '../../../constants/routes.js';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
 export default function LoginForm() {
-  const [step, setStep] = useState(1); // 1 = Email, 2 = OTP
+  const [step, setStep] = useState(1); // 1 = Email, 2 = OTP, 3 = Password
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
   
-  const { sendOtp, verifyOtp, isLoading, error, clearError, devOtp } = useAuthStore();
+  const { sendOtp, checkOtp, verifyOtp, isLoading, error, clearError, devOtp } = useAuthStore();
   const { toast } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Step 1: Send OTP
   const handleSendOtp = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     clearError();
     try {
       await sendOtp(email);
       setStep(2);
+      setIsOtpVerified(false);
+      setOtp('');
       toast?.success?.('OTP sent successfully!');
     } catch (err) {
       // Error is set in store and shown in UI
     }
   };
 
-  // Step 2: Verify OTP
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
+  // Step 2: Auto-check OTP
+  useEffect(() => {
+    const verifyOtpLocally = async () => {
+      if (otp.length === 6 && step === 2) {
+        clearError();
+        try {
+          await checkOtp(email, otp);
+          setIsOtpVerified(true);
+          setStep(3); // Move to password step
+          toast?.success?.('OTP Verified Successfully!');
+        } catch (err) {
+          // Error handled in store
+        }
+      }
+    };
+    
+    // Small timeout to let user see 6th digit
+    const timer = setTimeout(verifyOtpLocally, 300);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp, step, email]);
+
+  // Step 3: Login with Password
+  const handleLogin = async (e) => {
+    if (e) e.preventDefault();
     clearError();
     try {
-      const user = await verifyOtp(email, otp);
+      const user = await verifyOtp(email, password);
       toast?.success?.('Logged in successfully!');
       
       // New user → role selection; existing user → dashboard
@@ -52,20 +78,10 @@ export default function LoginForm() {
   const goBack = () => {
     setStep(1);
     setOtp('');
+    setPassword('');
+    setIsOtpVerified(false);
     clearError();
   };
-
-  // Auto-verify OTP when 6 digits are entered
-  useEffect(() => {
-    if (otp.length === 6 && step === 2) {
-      // Small timeout to let the user see the 6th digit before it auto-submits
-      const timer = setTimeout(() => {
-        handleVerifyOtp(new Event('submit'));
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [otp, step]);
 
   return (
     <div className="space-y-6">
@@ -83,7 +99,7 @@ export default function LoginForm() {
         </div>
       )}
 
-      <form onSubmit={handleVerifyOtp} className="space-y-5">
+      <form onSubmit={handleLogin} className="space-y-5">
         <div>
           <label className="block text-sm font-medium text-[#2d3748] mb-1">Email address</label>
           <div className="relative flex items-center">
@@ -94,7 +110,7 @@ export default function LoginForm() {
               placeholder="bhavya@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={step === 2 || isLoading}
+              disabled={step > 1 || isLoading}
               className="block w-full pl-3 pr-24 py-2.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors disabled:bg-[#f3f6f9] disabled:text-gray-500 text-gray-900 bg-[#f3f6f9]"
             />
             {step === 1 && (
@@ -107,7 +123,7 @@ export default function LoginForm() {
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
               </button>
             )}
-            {step === 2 && (
+            {step > 1 && (
               <button
                 type="button"
                 onClick={goBack}
@@ -120,7 +136,7 @@ export default function LoginForm() {
         </div>
 
         {/* OTP Entry Box - Appears just below Email when Verify is clicked */}
-        {step === 2 && (
+        {step === 2 && !isOtpVerified && (
           <div className="animate-fade-in bg-orange-50 p-3 rounded-md border border-orange-100">
             <div className="flex justify-between items-center mb-1">
               <label className="block text-sm font-medium text-orange-800">Enter OTP</label>
@@ -132,12 +148,24 @@ export default function LoginForm() {
             <input
               type="text"
               required
+              autoFocus
               autoComplete="one-time-code"
               placeholder="123456"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              disabled={isLoading}
               className="block w-full px-3 py-2 text-center tracking-widest text-lg rounded-md border border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-gray-900 bg-white"
             />
+          </div>
+        )}
+
+        {/* Verified OTP State */}
+        {isOtpVerified && (
+          <div className="animate-fade-in bg-green-50 p-3 rounded-md border border-green-200 flex items-center justify-between">
+            <div className="flex items-center text-green-700">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              <span className="text-sm font-medium">Email Verified Successfully</span>
+            </div>
           </div>
         )}
 
@@ -145,16 +173,19 @@ export default function LoginForm() {
           <label className="block text-sm font-medium text-[#2d3748] mb-1">Password</label>
           <input
             type="password"
+            required
             autoComplete="current-password"
-            placeholder={step === 1 ? "Enter email and verify first" : "••••••••"}
-            disabled={step === 1 || isLoading}
-            className={`block w-full px-3 py-2.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-gray-900 ${step === 1 ? 'bg-[#f3f6f9] cursor-not-allowed placeholder-gray-400' : 'bg-white'}`}
+            placeholder={step < 3 ? "Enter email and verify first" : "••••••••"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={step < 3 || isLoading}
+            className={`block w-full px-3 py-2.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-gray-900 ${step < 3 ? 'bg-[#f3f6f9] cursor-not-allowed placeholder-gray-400' : 'bg-white'}`}
           />
         </div>
 
         <button
           type="submit"
-          disabled={isLoading || step === 1 || otp.length < 6}
+          disabled={isLoading || step < 3 || password.length < 8}
           className="mt-6 w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#f05000] hover:bg-[#d64700] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f05000] disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign in'}
