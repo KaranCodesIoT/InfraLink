@@ -71,7 +71,7 @@ export default function useVoice(onTranscription, apiBase = '') {
 
         const cleanText = text.replace(/[*#_\[\]`]/g, '').replace(/\n+/g, '. ').slice(0, 200);
         const ttsLang = (lang || language).split('-')[0];
-        const base = apiBase || (import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1');
+        const base = apiBase || (import.meta.env.VITE_API_URL || 'https://infralink-production.up.railway.app/api/v1');
         const url = `${base}/ai/voice/tts-proxy?tl=${ttsLang}&q=${encodeURIComponent(cleanText)}`;
 
         if (audioRef.current) audioRef.current.pause();

@@ -39,7 +39,7 @@ export const csrfMiddleware = (req, res, next) => {
  * Validates that requests from browsers include the correct origin.
  */
 export const originCheckMiddleware = (req, res, next) => {
-    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',').map(o => o.trim());
+    const allowedOrigins = (process.env.CORS_ORIGIN || 'https://infra-link-sepia.vercel.app').split(',').map(o => o.trim());
     const origin = req.headers.origin || req.headers.referer;
 
     if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {

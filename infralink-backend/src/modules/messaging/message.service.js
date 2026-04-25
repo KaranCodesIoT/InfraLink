@@ -228,7 +228,7 @@ export const uploadAttachments = async (files, req) => {
             fs.writeFileSync(filepath, file.buffer);
             
             uploadedAttachments.push({
-                url: `http://localhost:${port}/uploads/attachments/${filename}`,
+                url: `https://infralink-production.up.railway.app/uploads/attachments/${filename}`,
                 type,
                 name: file.originalname,
                 size: file.size

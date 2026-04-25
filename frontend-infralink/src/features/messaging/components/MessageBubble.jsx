@@ -106,7 +106,7 @@ function TTSButton({ text, isMine }) {
 
                 // Hit our local backend proxy instead of Google directly! (Port fixed to 5001)
                 const encoded = encodeURIComponent(chunk);
-                const url = `http://localhost:5001/api/v1/ai/voice/tts-proxy?tl=${langCode}&q=${encoded}`;
+                const url = `https://infralink-production.up.railway.app/api/v1/ai/voice/tts-proxy?tl=${langCode}&q=${encoded}`;
                 
                 const audio = new Audio(url);
                 audioRef.current = audio;

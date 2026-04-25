@@ -10,11 +10,11 @@ import { ENV } from '../config/env.js';
  */
 export function resolveAvatarUrl(url) {
     if (!url) return '';
-    // Already an absolute URL (Cloudinary, http://localhost:5000/..., etc.)
+    // Already an absolute URL (Cloudinary, https://infralink-production.up.railway.app/..., etc.)
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) {
         return url;
     }
     // Relative URL like /uploads/avatars/xxx.jpg → prepend backend base
-    const backendBase = ENV.SOCKET_URL || 'http://localhost:5001';
+    const backendBase = ENV.SOCKET_URL || 'https://infralink-production.up.railway.app';
     return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
 }

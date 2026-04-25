@@ -3,10 +3,10 @@
 ## Base URL
 
 ```
-http://localhost:5000/api/v1
+https://infralink-production.up.railway.app/api/v1
 ```
 
-Interactive Swagger UI: `http://localhost:5000/api-docs`
+Interactive Swagger UI: `https://infralink-production.up.railway.app/api-docs`
 
 ---
 

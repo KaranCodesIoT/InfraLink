@@ -17,7 +17,7 @@ const envSchema = z.object({
     CLOUDINARY_API_KEY: z.string().optional(),
     CLOUDINARY_API_SECRET: z.string().optional(),
     GOOGLE_MAPS_API_KEY: z.string().optional(),
-    CORS_ORIGIN: z.string().default('http://localhost:3000'),
+    CORS_ORIGIN: z.string().default('https://infra-link-sepia.vercel.app'),
     SWAGGER_ENABLED: z.string().default('true'),
     RAZORPAY_KEY_ID: z.string().optional(),
     RAZORPAY_KEY_SECRET: z.string().optional(),

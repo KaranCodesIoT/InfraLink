@@ -155,7 +155,7 @@ export default function MessageBubble({ message, language = 'en-IN' }) {
                 .slice(0, 200);
 
             const langShort = language.split('-')[0]; // en, hi, mr
-            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1';
+            const baseUrl = import.meta.env.VITE_API_URL || 'https://infralink-production.up.railway.app/api/v1';
             const url = `${baseUrl}/ai/voice/tts-proxy?tl=${langShort}&q=${encodeURIComponent(cleanText)}`;
 
             if (audioRef.current) {

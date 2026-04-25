@@ -34,7 +34,7 @@ export const handleUpload = async (req, res, next) => {
                     fs.writeFileSync(filePath, file.buffer);
                     
                     const port = process.env.PORT || 5000;
-                    return `http://localhost:${port}/uploads/media/${filename}`;
+                    return `https://infralink-production.up.railway.app/uploads/media/${filename}`;
                 } catch (fallbackError) {
                     console.error("Local disk fallback failed:", fallbackError);
                     throw fallbackError;

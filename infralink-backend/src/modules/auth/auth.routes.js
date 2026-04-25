@@ -42,6 +42,22 @@ router.post('/check-otp', authLimiter, validateZod(checkOtpZodSchema), authContr
 router.post('/verify-otp', authLimiter, validateZod(loginZodSchema), authController.verifyOtp);
 
 router.post('/google-auth', authLimiter, validateZod(googleAuthZodSchema), authController.googleAuth);
+
+// Standard Google OAuth Routes (Redirection Flow)
+router.get('/google', (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const redirectUri = `https://infralink-production.up.railway.app/api/v1/auth/google/callback`;
+    const scope = 'openid email profile';
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    res.redirect(googleAuthUrl);
+});
+
+router.get('/google/callback', (req, res) => {
+    // This is a stub for the callback. In a full implementation, you would exchange the code for tokens.
+    // For now, we redirect back to the frontend with the code so the frontend can handle it if needed.
+    const frontendUrl = 'https://infra-link-sepia.vercel.app/auth/callback';
+    res.redirect(`${frontendUrl}?code=${req.query.code}`);
+});
 router.post('/update-role', authMiddleware, validateZod(updateRoleZodSchema), authController.updateRole);
 
 router.post('/refresh', validate(refreshTokenSchema), authController.refreshToken);

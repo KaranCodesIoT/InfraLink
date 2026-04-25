@@ -66,7 +66,7 @@ npm run reset   # wipe the database
 
 ## API Docs
 
-Available at `http://localhost:5000/api-docs` when `SWAGGER_ENABLED=true`.
+Available at `https://infralink-production.up.railway.app/api-docs` when `SWAGGER_ENABLED=true`.
 
 ## Contributing
 

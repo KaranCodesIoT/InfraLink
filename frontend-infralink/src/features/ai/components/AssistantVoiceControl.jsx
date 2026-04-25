@@ -94,7 +94,7 @@ export default function AssistantVoiceControl({
             .slice(0, 200);
 
         const lang = language.split('-')[0];
-        const baseUrl = apiBase || (import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1');
+        const baseUrl = apiBase || (import.meta.env.VITE_API_URL || 'https://infralink-production.up.railway.app/api/v1');
         const url = `${baseUrl}/ai/voice/tts-proxy?tl=${lang}&q=${encodeURIComponent(cleanText)}`;
 
         if (audioRef.current) {

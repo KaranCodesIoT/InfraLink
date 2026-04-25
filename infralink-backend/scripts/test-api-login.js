@@ -1,6 +1,6 @@
 const login = async () => {
   try {
-    const response = await fetch('http://localhost:5001/api/v1/auth/login', {
+    const response = await fetch('https://infralink-production.up.railway.app/api/v1/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
