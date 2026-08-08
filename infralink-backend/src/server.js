@@ -1,4 +1,5 @@
 import './config/env.js'; // validate env first
+// Server entry point
 import http from 'http';
 import app from './app.js';
 import connectDB from './config/database.js';
