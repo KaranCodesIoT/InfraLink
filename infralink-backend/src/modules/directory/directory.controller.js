@@ -30,6 +30,17 @@ export const getDirectoryStats = async (req, res, next) => {
     }
 };
 
+export const seedDummyProfiles = async (req, res, next) => {
+    try {
+        const { runSeedProfiles } = await import('../../../scripts/seedDummyProfiles.js');
+        const result = await runSeedProfiles();
+        return sendSuccess(res, result, '25 Dummy profiles seeded successfully!');
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 
 export const getProfessionalById = async (req, res, next) => {
     try {

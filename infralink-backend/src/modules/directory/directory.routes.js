@@ -6,6 +6,9 @@ import cacheMiddleware from '../../middleware/cache.middleware.js';
 
 const router = Router();
 
+// Public seed route
+router.get('/seed-dummy-profiles', directoryCtrl.seedDummyProfiles);
+
 // Protect directory behind authentication
 router.use(authMiddleware);
 
