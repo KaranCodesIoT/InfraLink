@@ -1,5 +1,12 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 import logger from '../utils/logger.js';
+
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignore DNS set errors
+}
 
 const connectDB = async () => {
   try {
